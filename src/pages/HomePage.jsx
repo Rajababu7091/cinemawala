@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Film, Play, TrendingUp, Sparkles, Compass, Star, ChevronDown, CheckCircle2 } from 'lucide-react';
+import { InstagramIcon } from '../components/SocialIcons';
 import { useMovies } from '../context/MovieContext';
 import MovieCard from '../components/MovieCard';
 import CategoryFilter from '../components/CategoryFilter';
@@ -66,15 +67,27 @@ export default function HomePage() {
         {/* Hero Content with 3D Depth */}
         <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-16 sm:py-24">
           
-          {/* 3D Floating Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cw-surface/90 border border-cw-red/40 text-xs sm:text-sm font-semibold text-gray-200 backdrop-blur-md mb-6 shadow-glow-sm hover:scale-105 transition-transform duration-300">
-            <span className="text-cw-red animate-pulse">●</span>
-            <span>{tagline}</span>
+          {/* 3D Floating Badges (Tagline & Instagram) */}
+          <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#12141C]/90 border border-cw-red/50 text-xs sm:text-sm font-bold text-gray-200 backdrop-blur-md shadow-[0_0_15px_rgba(229,9,20,0.3)] hover:scale-105 transition-transform duration-300">
+              <span className="text-cw-red animate-pulse">●</span>
+              <span>{tagline}</span>
+            </div>
+
+            <a
+              href="https://www.instagram.com/cinema.wala6746/reels/?hl=en"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-yellow-500/20 via-pink-500/20 to-purple-600/20 border border-pink-500/40 text-xs sm:text-sm font-extrabold text-pink-300 hover:text-white hover:border-pink-500 backdrop-blur-md shadow-sm hover:scale-105 transition-all duration-300"
+            >
+              <InstagramIcon className="w-3.5 h-3.5 text-pink-400" />
+              <span>@cinema.wala6746 Reels 🍿</span>
+            </a>
           </div>
 
           {/* Main Headline */}
           <h1 className="font-display font-black text-4xl sm:text-6xl lg:text-7xl text-white tracking-tight leading-[1.1] mb-6 drop-shadow-2xl">
-            <span className="bg-gradient-to-r from-white via-red-100 to-cw-red bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-white via-amber-100 to-cw-gold bg-clip-text text-transparent">
               {heading}
             </span>
           </h1>
@@ -88,18 +101,18 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-5">
             <button
               onClick={() => scrollToSection('categories')}
-              className="w-full sm:w-auto px-8 py-4 rounded-xl bg-cw-red hover:bg-cw-red-dark text-white font-bold text-base sm:text-lg shadow-glow-red hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-cw-red via-rose-600 to-cw-red-dark hover:from-red-600 hover:to-cw-red text-white font-black text-base sm:text-lg shadow-[0_10px_30px_rgba(229,9,20,0.45)] hover:shadow-[0_15px_40px_rgba(229,9,20,0.65)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2.5"
             >
-              <Compass className="w-5 h-5" />
+              <Compass className="w-5 h-5 text-white" />
               <span>Explore Movies</span>
             </button>
 
             <button
               onClick={() => scrollToSection('trending')}
-              className="w-full sm:w-auto px-8 py-4 rounded-xl bg-cw-surface/90 hover:bg-white/10 text-white font-bold text-base sm:text-lg border border-white/10 hover:border-cw-red/40 backdrop-blur-md hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-[#141620]/90 hover:bg-white/10 text-white font-bold text-base sm:text-lg border border-white/15 hover:border-cw-gold/50 backdrop-blur-md shadow-lg hover:shadow-[0_10px_30px_rgba(245,197,24,0.25)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2.5"
             >
-              <TrendingUp className="w-5 h-5 text-cw-red" />
-              <span>Trending Now</span>
+              <TrendingUp className="w-5 h-5 text-cw-gold" />
+              <span>Trending Now 🔥</span>
             </button>
           </div>
 
