@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  Plus, Edit2, Trash2, ExternalLink, RefreshCw, Check, 
+import {
+  Plus, Edit2, Trash2, ExternalLink, RefreshCw, Check,
   AlertTriangle, Shield, Search, Film, X, Save, Eye,
   Lock, Unlock, Key, LogOut, EyeOff, ShieldCheck, ArrowRight, ArrowLeft,
   Upload, Palette, Image as ImageIcon
@@ -13,21 +13,21 @@ import SEO from '../components/SEO';
 const DEFAULT_PASSCODE = 'cinemawala7091';
 
 export default function AdminPage() {
-  const { 
-    movies, 
-    isCloudSynced, 
-    siteSettings, 
-    updateSiteSettings, 
-    addMovie, 
-    updateMovie, 
-    deleteMovie, 
-    resetToDefault 
+  const {
+    movies,
+    isCloudSynced,
+    siteSettings,
+    updateSiteSettings,
+    addMovie,
+    updateMovie,
+    deleteMovie,
+    resetToDefault
   } = useMovies();
 
   // Authentication State
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     return sessionStorage.getItem('cinemawala_admin_auth') === 'true' ||
-           localStorage.getItem('cinemawala_admin_auth') === 'true';
+      localStorage.getItem('cinemawala_admin_auth') === 'true';
   });
   const [passcodeAttempt, setPasscodeAttempt] = useState('');
   const [showPasscode, setShowPasscode] = useState(false);
@@ -105,7 +105,7 @@ export default function AdminPage() {
         setCloudMasterPass(cloudPass);
         try {
           localStorage.setItem('cinemawala_admin_passcode', cloudPass);
-        } catch {}
+        } catch { }
       }
     });
   }, []);
@@ -303,7 +303,7 @@ export default function AdminPage() {
   };
 
   // Filter movies in admin table
-  const filtered = movies.filter(m => 
+  const filtered = movies.filter(m =>
     m.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     m.language?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (Array.isArray(m.genre) && m.genre.some(g => g.toLowerCase().includes(searchTerm.toLowerCase())))
@@ -313,8 +313,8 @@ export default function AdminPage() {
   if (!isAuthenticated) {
     return (
       <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
-        <SEO 
-          title="Admin Verification | CinemaWala" 
+        <SEO
+          title="Admin Verification | CinemaWala"
           description="Protected management portal. Authorized administrator login required."
         />
 
@@ -328,7 +328,7 @@ export default function AdminPage() {
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-cw-red/10 border border-cw-red/30 shadow-glow-sm text-cw-red mb-1">
               <Lock className="w-8 h-8" />
             </div>
-            
+
             <div className="space-y-1">
               <span className="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-cw-red/20 text-cw-red border border-cw-red/30 uppercase tracking-wider">
                 Restricted Access
@@ -426,7 +426,7 @@ export default function AdminPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      <SEO 
+      <SEO
         title="Admin Catalog Management | CinemaWala"
         description="CinemaWala management dashboard for movies, official watch URLs, and metadata."
       />
@@ -664,7 +664,7 @@ export default function AdminPage() {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto animate-fadeIn">
           <div className="relative w-full max-w-2xl bg-cw-card border border-white/15 rounded-2xl shadow-2xl p-6 my-8 max-h-[90vh] overflow-y-auto">
-            
+
             {/* Modal Header */}
             <div className="flex items-center justify-between pb-4 border-b border-white/10">
               <div className="flex items-center gap-2">
@@ -684,7 +684,7 @@ export default function AdminPage() {
             {/* Modal Form */}
             <form onSubmit={handleSubmit} className="mt-5 space-y-4 text-sm">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                
+
                 {/* Title */}
                 <div className="sm:col-span-2">
                   <label className="block text-xs font-semibold text-gray-300 mb-1">
