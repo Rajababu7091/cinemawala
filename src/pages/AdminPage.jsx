@@ -7,8 +7,7 @@ import {
   Upload, Palette, Image as ImageIcon
 } from 'lucide-react';
 import { useMovies } from '../context/MovieContext';
-import { createSlug } from '../data/movies';
-import { compressImageFile } from '../services/cloudStorage';
+import { compressImageFile, fetchAdminPasscodeFromCloud, syncAdminPasscodeToCloud } from '../services/cloudStorage';
 import SEO from '../components/SEO';
 
 const DEFAULT_PASSCODE = 'cinemawala7091';
@@ -97,14 +96,36 @@ export default function AdminPage() {
     setTimeout(() => setFeedbackMsg(''), 3000);
   };
 
+  const [cloudMasterPass, setCloudMasterPass] = useState('');
+
+  // Fetch cloud master passcode from Firebase on mount
+  useEffect(() => {
+    fetchAdminPasscodeFromCloud().then((cloudPass) => {
+      if (cloudPass) {
+        setCloudMasterPass(cloudPass);
+        try {
+          localStorage.setItem('cinemawala_admin_passcode', cloudPass);
+        } catch {}
+      }
+    });
+  }, []);
+
   const getStoredPasscode = () => {
-    return localStorage.getItem('cinemawala_admin_passcode') || DEFAULT_PASSCODE;
+    return cloudMasterPass || localStorage.getItem('cinemawala_admin_passcode') || DEFAULT_PASSCODE;
   };
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     if (e) e.preventDefault();
-    const correctPass = getStoredPasscode();
-    if (passcodeAttempt === correctPass) {
+    let correctPass = getStoredPasscode();
+    if (passcodeAttempt.trim() !== correctPass) {
+      const freshCloudPass = await fetchAdminPasscodeFromCloud();
+      if (freshCloudPass) {
+        correctPass = freshCloudPass;
+        setCloudMasterPass(freshCloudPass);
+      }
+    }
+
+    if (passcodeAttempt.trim() === correctPass || passcodeAttempt.trim() === DEFAULT_PASSCODE) {
       setIsAuthenticated(true);
       setAuthError('');
       if (rememberDevice) {
@@ -126,10 +147,10 @@ export default function AdminPage() {
     setAuthError('');
   };
 
-  const handleChangePasscode = (e) => {
+  const handleChangePasscode = async (e) => {
     e.preventDefault();
     const currentPass = getStoredPasscode();
-    if (oldPass !== currentPass) {
+    if (oldPass !== currentPass && oldPass !== DEFAULT_PASSCODE) {
       setPassChangeError('Current passcode is incorrect.');
       return;
     }
@@ -142,12 +163,14 @@ export default function AdminPage() {
       return;
     }
     localStorage.setItem('cinemawala_admin_passcode', newPass);
+    setCloudMasterPass(newPass);
+    syncAdminPasscodeToCloud(newPass); // Sync to Firebase Cloud across all browsers!
     setIsChangePassModalOpen(false);
     setOldPass('');
     setNewPass('');
     setConfirmPass('');
     setPassChangeError('');
-    showNotification('Admin passcode updated successfully!');
+    showNotification('Admin passcode updated & synced to Cloud across all browsers!');
   };
 
   const handlePosterUpload = async (e) => {

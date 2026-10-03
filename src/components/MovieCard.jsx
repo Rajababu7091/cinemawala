@@ -66,7 +66,7 @@ export default function MovieCard({ movie, featured = false }) {
       {/* Poster Container */}
       <div className="relative aspect-[2/3] w-full overflow-hidden bg-cw-surface">
         <img
-          src={movie.poster}
+          src={movie.poster || movie.backdrop || 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=600&auto=format&fit=crop'}
           alt={movie.title}
           loading="lazy"
           className="w-full h-full object-cover object-center transform transition-transform duration-500 ease-out group-hover:scale-108 group-hover:brightness-105"

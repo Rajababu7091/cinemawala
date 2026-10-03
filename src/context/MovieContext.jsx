@@ -83,7 +83,7 @@ export function MovieProvider({ children }) {
 
   // Update existing movie
   const updateMovie = (id, updatedFields) => {
-    const updated = movies.map(m => (m.id === id ? { ...m, ...updatedFields } : m));
+    const updated = movies.map(m => (String(m.id) === String(id) ? { ...m, ...updatedFields } : m));
     setMovies(updated);
     saveMovies(updated);
     syncMoviesToCloud(updated); // Sync to Firebase Cloud
@@ -91,7 +91,7 @@ export function MovieProvider({ children }) {
 
   // Delete movie
   const deleteMovie = (id) => {
-    const updated = movies.filter(m => m.id !== id);
+    const updated = movies.filter(m => String(m.id) !== String(id));
     setMovies(updated);
     saveMovies(updated);
     syncMoviesToCloud(updated); // Sync to Firebase Cloud

@@ -98,6 +98,38 @@ export async function syncSettingsToCloud(settings) {
 }
 
 /**
+ * Fetch master admin passcode from cloud
+ */
+export async function fetchAdminPasscodeFromCloud() {
+  try {
+    const res = await fetch(`${FIREBASE_DB_URL}/admin_passcode.json`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return typeof data === 'string' && data.length >= 6 ? data : null;
+  } catch (err) {
+    return null;
+  }
+}
+
+/**
+ * Save master admin passcode to cloud
+ */
+export async function syncAdminPasscodeToCloud(passcode) {
+  try {
+    const res = await fetch(`${FIREBASE_DB_URL}/admin_passcode.json`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(passcode),
+    });
+    return res.ok;
+  } catch (err) {
+    return false;
+  }
+}
+
+/**
  * Compress an uploaded user image file to optimized WebP/JPEG base64 data URL
  */
 export function compressImageFile(file, maxWidth = 1000, quality = 0.85) {
