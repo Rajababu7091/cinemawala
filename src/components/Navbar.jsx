@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Film, Search, Menu, X, ShieldAlert, Sparkles, Popcorn } from 'lucide-react';
+import { Film, Search, Menu, X, Sparkles, Popcorn } from 'lucide-react';
 
 export default function Navbar({ onOpenSearch }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -122,16 +122,6 @@ export default function Navbar({ onOpenSearch }) {
               <Search className="w-5 h-5 text-cw-red" />
             </button>
 
-            {/* Admin Portal Link */}
-            <Link
-              to="/admin"
-              className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-400 hover:text-cw-red border border-white/5 hover:border-cw-red/30 bg-black/20 hover:bg-cw-red/5 transition-all"
-              title="Admin & Movie Management Mockup"
-            >
-              <ShieldAlert className="w-3.5 h-3.5" />
-              <span>Admin</span>
-            </Link>
-
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -153,14 +143,6 @@ export default function Navbar({ onOpenSearch }) {
               <Popcorn className="w-4 h-4 text-cw-red" />
               Cinema ka asli adda
             </span>
-            <Link
-              to="/admin"
-              onClick={() => setMobileMenuOpen(false)}
-              className="text-xs text-cw-red font-medium flex items-center gap-1 hover:underline"
-            >
-              <ShieldAlert className="w-3.5 h-3.5" />
-              Admin Portal
-            </Link>
           </div>
 
           <div className="pt-2 flex flex-col space-y-1">

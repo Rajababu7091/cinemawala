@@ -2,14 +2,35 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Plus, Edit2, Trash2, ExternalLink, RefreshCw, Check, 
-  AlertTriangle, Shield, Search, Film, X, Save, Eye 
+  AlertTriangle, Shield, Search, Film, X, Save, Eye,
+  Lock, Unlock, Key, LogOut, EyeOff, ShieldCheck, ArrowRight, ArrowLeft
 } from 'lucide-react';
 import { useMovies } from '../context/MovieContext';
 import { createSlug } from '../data/movies';
 import SEO from '../components/SEO';
 
+const DEFAULT_PASSCODE = 'cinemawala7091';
+
 export default function AdminPage() {
   const { movies, addMovie, updateMovie, deleteMovie, resetToDefault } = useMovies();
+
+  // Authentication State
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return sessionStorage.getItem('cinemawala_admin_auth') === 'true' ||
+           localStorage.getItem('cinemawala_admin_auth') === 'true';
+  });
+  const [passcodeAttempt, setPasscodeAttempt] = useState('');
+  const [showPasscode, setShowPasscode] = useState(false);
+  const [rememberDevice, setRememberDevice] = useState(false);
+  const [authError, setAuthError] = useState('');
+
+  // Change Passcode Modal State
+  const [isChangePassModalOpen, setIsChangePassModalOpen] = useState(false);
+  const [oldPass, setOldPass] = useState('');
+  const [newPass, setNewPass] = useState('');
+  const [confirmPass, setConfirmPass] = useState('');
+  const [passChangeError, setPassChangeError] = useState('');
+
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingMovie, setEditingMovie] = useState(null);
@@ -39,6 +60,59 @@ export default function AdminPage() {
   const showNotification = (msg) => {
     setFeedbackMsg(msg);
     setTimeout(() => setFeedbackMsg(''), 3000);
+  };
+
+  const getStoredPasscode = () => {
+    return localStorage.getItem('cinemawala_admin_passcode') || DEFAULT_PASSCODE;
+  };
+
+  const handleLogin = (e) => {
+    if (e) e.preventDefault();
+    const correctPass = getStoredPasscode();
+    if (passcodeAttempt === correctPass) {
+      setIsAuthenticated(true);
+      setAuthError('');
+      if (rememberDevice) {
+        localStorage.setItem('cinemawala_admin_auth', 'true');
+      } else {
+        sessionStorage.setItem('cinemawala_admin_auth', 'true');
+      }
+      showNotification('Access granted. Welcome to CinemaWala Admin!');
+    } else {
+      setAuthError('Incorrect passcode. Please verify and try again.');
+    }
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    sessionStorage.removeItem('cinemawala_admin_auth');
+    localStorage.removeItem('cinemawala_admin_auth');
+    setPasscodeAttempt('');
+    setAuthError('');
+  };
+
+  const handleChangePasscode = (e) => {
+    e.preventDefault();
+    const currentPass = getStoredPasscode();
+    if (oldPass !== currentPass) {
+      setPassChangeError('Current passcode is incorrect.');
+      return;
+    }
+    if (newPass.length < 6) {
+      setPassChangeError('New passcode must be at least 6 characters.');
+      return;
+    }
+    if (newPass !== confirmPass) {
+      setPassChangeError('New passcodes do not match.');
+      return;
+    }
+    localStorage.setItem('cinemawala_admin_passcode', newPass);
+    setIsChangePassModalOpen(false);
+    setOldPass('');
+    setNewPass('');
+    setConfirmPass('');
+    setPassChangeError('');
+    showNotification('Admin passcode updated successfully!');
   };
 
   const handleOpenAdd = () => {
@@ -125,40 +199,164 @@ export default function AdminPage() {
     (Array.isArray(m.genre) && m.genre.some(g => g.toLowerCase().includes(searchTerm.toLowerCase())))
   );
 
+  // If not authenticated, render the secure Admin Passcode Gate
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
+        <SEO 
+          title="Admin Verification | CinemaWala" 
+          description="Protected management portal. Authorized administrator login required."
+        />
+
+        <div className="w-full max-w-md bg-cw-card/90 backdrop-blur-xl border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden animate-fadeIn">
+          {/* Ambient Glow */}
+          <div className="absolute -top-24 -right-24 w-48 h-48 bg-cw-red/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-cw-gold/10 rounded-full blur-3xl pointer-events-none" />
+
+          {/* Icon Header */}
+          <div className="text-center space-y-3 relative z-10">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-cw-red/10 border border-cw-red/30 shadow-glow-sm text-cw-red mb-1">
+              <Lock className="w-8 h-8" />
+            </div>
+            
+            <div className="space-y-1">
+              <span className="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-cw-red/20 text-cw-red border border-cw-red/30 uppercase tracking-wider">
+                Restricted Access
+              </span>
+              <h1 className="text-2xl font-black text-white tracking-tight">
+                Cinema<span className="text-cw-red">Wala</span> Admin
+              </h1>
+              <p className="text-xs text-gray-400">
+                Enter your secret administrator passcode to access movie catalog management & streaming URLs.
+              </p>
+            </div>
+          </div>
+
+          {/* Error Message */}
+          {authError && (
+            <div className="mt-6 p-3 rounded-xl bg-red-500/15 border border-red-500/30 text-red-400 text-xs flex items-center gap-2 animate-shake">
+              <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+              <span>{authError}</span>
+            </div>
+          )}
+
+          {/* Passcode Form */}
+          <form onSubmit={handleLogin} className="mt-6 space-y-4 relative z-10">
+            <div>
+              <label className="block text-xs font-medium text-gray-300 mb-1.5">
+                Admin Passcode
+              </label>
+              <div className="relative">
+                <input
+                  type={showPasscode ? 'text' : 'password'}
+                  value={passcodeAttempt}
+                  onChange={(e) => {
+                    setPasscodeAttempt(e.target.value);
+                    if (authError) setAuthError('');
+                  }}
+                  placeholder="Enter admin passcode..."
+                  autoFocus
+                  required
+                  className="w-full px-4 py-3 rounded-xl bg-cw-surface/90 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-cw-red focus:ring-1 focus:ring-cw-red text-sm transition-all pr-11"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPasscode(!showPasscode)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors p-1"
+                  aria-label={showPasscode ? 'Hide passcode' : 'Show passcode'}
+                >
+                  {showPasscode ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between text-xs">
+              <label className="flex items-center gap-2 cursor-pointer text-gray-400 hover:text-gray-300">
+                <input
+                  type="checkbox"
+                  checked={rememberDevice}
+                  onChange={(e) => setRememberDevice(e.target.checked)}
+                  className="w-4 h-4 rounded text-cw-red focus:ring-cw-red bg-cw-surface border-white/20"
+                />
+                <span>Remember this device</span>
+              </label>
+            </div>
+
+            <button
+              type="submit"
+              className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-cw-red hover:bg-cw-red-dark text-white text-sm font-bold shadow-glow-sm hover:shadow-glow transition-all"
+            >
+              <span>Unlock Admin Dashboard</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </form>
+
+          {/* Security & Default Notice */}
+          <div className="mt-6 pt-4 border-t border-white/10 text-center space-y-2 relative z-10">
+            <p className="text-[11px] text-gray-500">
+              Default passcode: <code className="text-cw-gold bg-white/5 px-1.5 py-0.5 rounded border border-white/10 font-mono">cinemawala7091</code>
+            </p>
+            <p className="text-[11px] text-gray-500">
+              (You can change this passcode to your own private password anytime inside the dashboard)
+            </p>
+            <div className="pt-2">
+              <Link
+                to="/"
+                className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-white transition-colors"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Return to CinemaWala Home</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       <SEO 
-        title="Admin Catalog Management"
-        description="CinemaWala demo management dashboard for movies, official watch URLs, and metadata."
+        title="Admin Catalog Management | CinemaWala"
+        description="CinemaWala management dashboard for movies, official watch URLs, and metadata."
       />
 
-      {/* Top Banner: Protected Mockup Warning */}
-      <div className="p-4 rounded-2xl bg-cw-card border border-cw-red/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Top Banner: Protected Management Banner */}
+      <div className="p-4 sm:p-5 rounded-2xl bg-cw-card border border-cw-red/30 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-cw-red/10 border border-cw-red/40 flex items-center justify-center text-cw-red flex-shrink-0">
-            <Shield className="w-5 h-5" />
+            <ShieldCheck className="w-5 h-5 text-emerald-400" />
           </div>
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-bold text-white">CinemaWala Management Console</h1>
-              <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-cw-gold/20 text-cw-gold border border-cw-gold/30">
-                Demo Mode (LocalStorage)
+              <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                Admin Verified
               </span>
             </div>
             <p className="text-xs text-gray-400">
-              Manage discovery items, edit official streaming destinations, or seed new reel movies.
+              Manage discovery items, edit official streaming destinations, and customize catalog entries.
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => setIsChangePassModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 text-xs font-semibold border border-white/10 transition-colors"
+            title="Change secret admin passcode"
+          >
+            <Key className="w-3.5 h-3.5 text-cw-gold" />
+            <span>Passcode</span>
+          </button>
+
           <button
             onClick={handleReset}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 text-xs font-semibold border border-white/10 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 text-xs font-semibold border border-white/10 transition-colors"
             title="Reset catalog back to initial movies"
           >
             <RefreshCw className="w-3.5 h-3.5" />
-            <span>Reset Demo Data</span>
+            <span>Reset Demo</span>
           </button>
 
           <button
@@ -166,7 +364,16 @@ export default function AdminPage() {
             className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-cw-red hover:bg-cw-red-dark text-white text-xs font-bold shadow-glow-sm transition-all"
           >
             <Plus className="w-4 h-4" />
-            <span>Add New Movie</span>
+            <span>Add Movie</span>
+          </button>
+
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-semibold border border-red-500/20 transition-colors"
+            title="Lock and log out"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span>Lock</span>
           </button>
         </div>
       </div>
@@ -571,6 +778,104 @@ export default function AdminPage() {
                 >
                   <Save className="w-4 h-4" />
                   <span>{editingMovie ? 'Save Changes' : 'Create Movie'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Change Passcode Modal */}
+      {isChangePassModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+          <div className="w-full max-w-md bg-cw-card border border-white/15 rounded-3xl p-6 shadow-2xl relative">
+            <div className="flex items-center justify-between pb-4 border-b border-white/10">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-cw-gold/10 border border-cw-gold/30 flex items-center justify-center text-cw-gold">
+                  <Key className="w-4 h-4" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-white">Change Admin Passcode</h2>
+                  <p className="text-[11px] text-gray-400">Update your private administrator key</p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setIsChangePassModalOpen(false);
+                  setPassChangeError('');
+                }}
+                className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {passChangeError && (
+              <div className="mt-4 p-3 rounded-xl bg-red-500/20 border border-red-500/30 text-red-400 text-xs flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                <span>{passChangeError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleChangePasscode} className="mt-4 space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-300 mb-1">
+                  Current Passcode
+                </label>
+                <input
+                  type="password"
+                  value={oldPass}
+                  onChange={(e) => setOldPass(e.target.value)}
+                  placeholder="Enter current passcode..."
+                  required
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-cw-surface border border-white/10 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-cw-red"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-300 mb-1">
+                  New Passcode (min 6 characters)
+                </label>
+                <input
+                  type="password"
+                  value={newPass}
+                  onChange={(e) => setNewPass(e.target.value)}
+                  placeholder="Enter new secret passcode..."
+                  required
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-cw-surface border border-white/10 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-cw-red"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-300 mb-1">
+                  Confirm New Passcode
+                </label>
+                <input
+                  type="password"
+                  value={confirmPass}
+                  onChange={(e) => setConfirmPass(e.target.value)}
+                  placeholder="Confirm new passcode..."
+                  required
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-cw-surface border border-white/10 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-cw-red"
+                />
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsChangePassModalOpen(false);
+                    setPassChangeError('');
+                  }}
+                  className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 text-xs font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-cw-red hover:bg-cw-red-dark text-white text-xs font-bold shadow-glow-sm"
+                >
+                  Save Passcode
                 </button>
               </div>
             </form>

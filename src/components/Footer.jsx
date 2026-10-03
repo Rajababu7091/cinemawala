@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Film, ShieldCheck, Heart } from 'lucide-react';
+import { Film, ShieldCheck, Heart, Lock } from 'lucide-react';
 import { InstagramIcon, YoutubeIcon, FacebookIcon } from './SocialIcons';
 
 export default function Footer() {
@@ -109,12 +109,6 @@ export default function Footer() {
                   Terms of Service
                 </Link>
               </li>
-              <li>
-                <Link to="/admin" className="hover:text-cw-red transition-colors flex items-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5 text-cw-red" />
-                  <span>Admin Dashboard</span>
-                </Link>
-              </li>
             </ul>
 
             <div className="pt-2">
@@ -134,9 +128,19 @@ export default function Footer() {
         {/* Bottom Rights */}
         <div className="mt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500 gap-3">
           <p>© 2026 CinemaWala. All rights reserved.</p>
-          <p className="flex items-center gap-1">
-            Made with <Heart className="w-3 h-3 text-cw-red fill-cw-red" /> for true cinema lovers
-          </p>
+          <div className="flex items-center gap-4">
+            <p className="flex items-center gap-1">
+              Made with <Heart className="w-3 h-3 text-cw-red fill-cw-red" /> for true cinema lovers
+            </p>
+            <Link 
+              to="/admin" 
+              className="text-gray-700 hover:text-gray-400 transition-colors p-1" 
+              title="Admin Portal" 
+              aria-label="Admin Login"
+            >
+              <Lock className="w-3 h-3" />
+            </Link>
+          </div>
         </div>
       </div>
     </footer>
