@@ -113,10 +113,16 @@ export default function InstagramReelPage() {
 
         {/* Instagram Hook Prompts */}
         <div className="mt-8 pt-6 border-t border-white/10 space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-pink-500/10 border border-pink-500/30 text-pink-400 text-xs font-semibold">
-            <InstagramIcon className="w-3.5 h-3.5" />
-            <span>Found this movie on Instagram? 🍿</span>
-          </div>
+          <a
+            href="https://www.instagram.com/cinema.wala6746/reels/?hl=en"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-yellow-500/20 border border-pink-500/40 text-pink-300 hover:text-white hover:border-pink-500 text-xs font-bold transition-all shadow-sm group hover:scale-105"
+            title="Follow @cinema.wala6746 on Instagram"
+          >
+            <InstagramIcon className="w-3.5 h-3.5 text-pink-400 group-hover:rotate-12 transition-transform" />
+            <span>Watch more on Instagram @cinema.wala6746 🍿</span>
+          </a>
 
           <h3 className="text-lg sm:text-xl font-bold text-white">
             Watch it on an official platform.
