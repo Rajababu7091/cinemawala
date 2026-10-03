@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { MovieProvider } from './context/MovieContext';
+import { AuthProvider } from './context/AuthContext';
 
 // Components
 import Navbar from './components/Navbar';
@@ -22,8 +23,9 @@ export default function App() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   return (
-    <MovieProvider>
-      <Router>
+    <AuthProvider>
+      <MovieProvider>
+        <Router>
         <div className="min-h-screen flex flex-col bg-[#0A0B0E] text-cw-light font-sans selection:bg-cw-red selection:text-white">
           
           {/* Top Sticky Navbar */}
@@ -55,5 +57,6 @@ export default function App() {
         </div>
       </Router>
     </MovieProvider>
+  </AuthProvider>
   );
 }
