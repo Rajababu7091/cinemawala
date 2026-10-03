@@ -30,11 +30,12 @@ export default function Footer() {
 
             <div className="flex items-center gap-3 pt-2">
               <a
-                href="https://instagram.com"
+                href="https://www.instagram.com/cinema.wala6746/reels/?hl=en"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-9 h-9 rounded-lg bg-cw-surface border border-white/5 flex items-center justify-center text-gray-300 hover:text-pink-400 hover:border-pink-500/40 hover:bg-white/5 transition-all"
-                aria-label="CinemaWala on Instagram"
+                className="w-10 h-10 rounded-xl bg-gradient-to-tr from-yellow-500/10 via-pink-500/20 to-purple-600/20 border border-pink-500/30 flex items-center justify-center text-pink-400 hover:text-white hover:border-pink-500 hover:from-yellow-500 hover:via-pink-500 hover:to-purple-600 shadow-sm hover:shadow-glow-sm hover:scale-110 transition-all duration-300"
+                aria-label="CinemaWala on Instagram Reels (@cinema.wala6746)"
+                title="Watch CinemaWala Instagram Reels"
               >
                 <InstagramIcon className="w-4 h-4" />
               </a>
