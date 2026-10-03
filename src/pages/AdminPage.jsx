@@ -125,7 +125,7 @@ export default function AdminPage() {
       }
     }
 
-    if (passcodeAttempt.trim() === correctPass || passcodeAttempt.trim() === DEFAULT_PASSCODE) {
+    if (passcodeAttempt.trim() === correctPass) {
       setIsAuthenticated(true);
       setAuthError('');
       if (rememberDevice) {
@@ -150,7 +150,7 @@ export default function AdminPage() {
   const handleChangePasscode = async (e) => {
     e.preventDefault();
     const currentPass = getStoredPasscode();
-    if (oldPass !== currentPass && oldPass !== DEFAULT_PASSCODE) {
+    if (oldPass !== currentPass) {
       setPassChangeError('Current passcode is incorrect.');
       return;
     }
@@ -401,23 +401,15 @@ export default function AdminPage() {
             </button>
           </form>
 
-          {/* Security & Default Notice */}
-          <div className="mt-6 pt-4 border-t border-white/10 text-center space-y-2 relative z-10">
-            <p className="text-[11px] text-gray-500">
-              Default passcode: <code className="text-cw-gold bg-white/5 px-1.5 py-0.5 rounded border border-white/10 font-mono">cinemawala7091</code>
-            </p>
-            <p className="text-[11px] text-gray-500">
-              (You can change this passcode to your own private password anytime inside the dashboard)
-            </p>
-            <div className="pt-2">
-              <Link
-                to="/"
-                className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-white transition-colors"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                <span>Return to CinemaWala Home</span>
-              </Link>
-            </div>
+          {/* Return to Home */}
+          <div className="mt-6 pt-4 border-t border-white/10 text-center relative z-10">
+            <Link
+              to="/"
+              className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-white transition-colors"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Return to CinemaWala Home</span>
+            </Link>
           </div>
         </div>
       </div>
