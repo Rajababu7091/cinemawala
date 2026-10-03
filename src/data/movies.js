@@ -44,6 +44,25 @@ export const CATEGORIES = [
 export const DEFAULT_MOVIES = [
   {
     id: 1,
+    title: "Saiyaara",
+    slug: "saiyaara",
+    year: 2025,
+    genre: ["Romance", "Drama"],
+    language: "Hindi",
+    duration: "2h 36m",
+    rating: 6.3,
+    poster: "https://images.unsplash.com/photo-1518173946687-a4c8a383392e?q=80&w=900&auto=format&fit=crop",
+    backdrop: "https://images.unsplash.com/photo-1518173946687-a4c8a383392e?q=80&w=1600&auto=format&fit=crop",
+    description: "A passionate musical romantic drama following a singer-songwriter duo navigating devotion, heartbreak, and emotional memory amidst breathtaking landscapes.",
+    cast: ["Ahaan Panday", "Aneet Padda"],
+    director: "Mohit Suri",
+    platform: "Official Platform",
+    watchUrl: "https://www.netflix.com",
+    trending: true,
+    category: ["Bollywood", "Romance", "Drama"]
+  },
+  {
+    id: 2,
     title: "Vanguard: The Crimson Sky",
     slug: "vanguard-crimson-sky",
     year: 2026,
@@ -53,7 +72,7 @@ export const DEFAULT_MOVIES = [
     rating: 8.8,
     poster: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=900&auto=format&fit=crop",
     backdrop: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=1600&auto=format&fit=crop",
-    description: "In a neon-drenched metropolis under martial rule, an elite tactical pilot discovers a covert broadcast that exposes the shadow controllers of the energy grid. A high-octane spectacle of rebellion and velocity.",
+    description: "In a neon-drenched metropolis under martial rule, an elite tactical pilot discovers a covert broadcast that exposes the shadow controllers of the energy grid.",
     cast: ["Vikram Malhotra", "Tara Sutaria", "Arjun Rampal"],
     director: "Kabir Anand",
     platform: "Prime Video",
@@ -272,7 +291,7 @@ export const DEFAULT_MOVIES = [
   }
 ];
 
-const STORAGE_KEY = 'cinemawala_movies_v1';
+const STORAGE_KEY = 'cinemawala_movies_v2';
 
 /**
  * Get all movies from localStorage, falling back to DEFAULT_MOVIES
