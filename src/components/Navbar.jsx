@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Film, Search, Menu, X, Sparkles, Popcorn, User, LogOut, Shield, ChevronDown } from 'lucide-react';
+import { InstagramIcon } from './SocialIcons';
 import { useAuth } from '../context/AuthContext';
 
 const GoogleIcon = () => (
@@ -175,6 +176,18 @@ export default function Navbar({ onOpenSearch }) {
                 ⌘K
               </kbd>
             </button>
+
+            {/* Instagram Reels Link */}
+            <a
+              href="https://www.instagram.com/cinema.wala6746/reels/?hl=en"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden lg:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-yellow-500/10 border border-pink-500/30 text-pink-300 hover:text-white hover:border-pink-500 hover:from-pink-500/25 hover:to-purple-500/25 text-xs font-bold transition-all shadow-sm group"
+              title="Watch CinemaWala on Instagram Reels (@cinema.wala6746)"
+            >
+              <InstagramIcon className="w-3.5 h-3.5 text-pink-400 group-hover:rotate-12 transition-transform" />
+              <span>Reels</span>
+            </a>
 
             {/* Mobile Search Button */}
             <button
@@ -365,6 +378,23 @@ export default function Navbar({ onOpenSearch }) {
                 <span>Admin Dashboard</span>
               </Link>
             )}
+
+            {/* Official Instagram Reels Link in Mobile */}
+            <a
+              href="https://www.instagram.com/cinema.wala6746/reels/?hl=en"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center justify-between px-4 py-3 rounded-xl bg-gradient-to-r from-yellow-500/15 via-pink-500/15 to-purple-600/15 border border-pink-500/30 text-pink-300 hover:text-white font-bold text-sm shadow-sm"
+            >
+              <div className="flex items-center gap-2.5">
+                <InstagramIcon className="w-4 h-4 text-pink-400" />
+                <span>Instagram Reels (@cinema.wala6746)</span>
+              </div>
+              <span className="text-[10px] bg-pink-500/25 px-2 py-0.5 rounded-md text-pink-200 border border-pink-500/40">
+                Watch ↗
+              </span>
+            </a>
           </div>
 
           <div className="pt-2">
