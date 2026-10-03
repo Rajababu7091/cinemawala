@@ -8,9 +8,31 @@ import {
 } from 'lucide-react';
 import { useMovies } from '../context/MovieContext';
 import { compressImageFile, fetchAdminPasscodeFromCloud, syncAdminPasscodeToCloud } from '../services/cloudStorage';
+import { useAuth, ADMIN_EMAILS } from '../context/AuthContext';
 import SEO from '../components/SEO';
 
 const DEFAULT_PASSCODE = 'cinemawala7091';
+
+const GoogleIcon = () => (
+  <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24">
+    <path
+      fill="#4285F4"
+      d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"
+    />
+    <path
+      fill="#34A853"
+      d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.36 24 12 24z"
+    />
+    <path
+      fill="#FBBC05"
+      d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.98 0 12s.45 3.82 1.25 5.42l4.03-3.15z"
+    />
+    <path
+      fill="#EA4335"
+      d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.36 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
+    />
+  </svg>
+);
 
 export default function AdminPage() {
   const {
@@ -25,6 +47,8 @@ export default function AdminPage() {
   } = useMovies();
 
   // Authentication State
+  const { user, isAdmin, loginWithGoogle } = useAuth();
+  const [isGoogleLoggingIn, setIsGoogleLoggingIn] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     return sessionStorage.getItem('cinemawala_admin_auth') === 'true' ||
       localStorage.getItem('cinemawala_admin_auth') === 'true';
@@ -137,6 +161,45 @@ export default function AdminPage() {
     } else {
       setAuthError('Incorrect passcode. Please verify and try again.');
     }
+  };
+
+  const handleGoogleAdminLogin = async () => {
+    setIsGoogleLoggingIn(true);
+    setAuthError('');
+    try {
+      const res = await loginWithGoogle();
+      if (res.success && res.user) {
+        const email = (res.user.email || '').toLowerCase();
+        const isAllowedAdmin = ADMIN_EMAILS.some(a => a.toLowerCase() === email);
+        if (isAllowedAdmin) {
+          setIsAuthenticated(true);
+          if (rememberDevice) {
+            localStorage.setItem('cinemawala_admin_auth', 'true');
+          } else {
+            sessionStorage.setItem('cinemawala_admin_auth', 'true');
+          }
+          showNotification(`Access granted. Welcome, ${res.user.displayName || 'Admin'}!`);
+        } else {
+          setAuthError(`Access Denied: ${res.user.email} is not registered as an administrator.`);
+        }
+      } else if (res.error) {
+        setAuthError(`Google Sign-In failed: ${res.error}`);
+      }
+    } catch (err) {
+      setAuthError('Google Sign-In failed. Please try again.');
+    } finally {
+      setIsGoogleLoggingIn(false);
+    }
+  };
+
+  const handleQuickUnlockAsAdmin = () => {
+    setIsAuthenticated(true);
+    if (rememberDevice) {
+      localStorage.setItem('cinemawala_admin_auth', 'true');
+    } else {
+      sessionStorage.setItem('cinemawala_admin_auth', 'true');
+    }
+    showNotification(`Welcome back, ${user?.displayName || 'Admin'}!`);
   };
 
   const handleLogout = () => {
@@ -350,8 +413,45 @@ export default function AdminPage() {
             </div>
           )}
 
+          {/* Google Sign-in / Fast Unlock */}
+          <div className="mt-6 space-y-3 relative z-10">
+            {user && isAdmin ? (
+              <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-center space-y-2.5">
+                <div className="flex items-center justify-center gap-2 text-emerald-400 text-xs font-semibold">
+                  <ShieldCheck className="w-4 h-4" />
+                  <span className="truncate">Signed in: {user.email}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleQuickUnlockAsAdmin}
+                  className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-glow-sm transition-all flex items-center justify-center gap-2"
+                >
+                  <span>1-Click Unlock as Admin</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={handleGoogleAdminLogin}
+                disabled={isGoogleLoggingIn}
+                className="w-full flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 hover:border-white/35 text-white text-xs font-bold transition-all shadow-sm group"
+              >
+                <GoogleIcon />
+                <span>{isGoogleLoggingIn ? 'Connecting...' : 'Sign In with Google (Admin Gmail)'}</span>
+              </button>
+            )}
+
+            <div className="relative flex items-center justify-center pt-1">
+              <div className="border-t border-white/10 w-full" />
+              <span className="bg-cw-card px-3 text-[10px] uppercase font-semibold text-gray-400 tracking-wider">
+                or enter passcode
+              </span>
+            </div>
+          </div>
+
           {/* Passcode Form */}
-          <form onSubmit={handleLogin} className="mt-6 space-y-4 relative z-10">
+          <form onSubmit={handleLogin} className="mt-4 space-y-4 relative z-10">
             <div>
               <label className="block text-xs font-medium text-gray-300 mb-1.5">
                 Admin Passcode
