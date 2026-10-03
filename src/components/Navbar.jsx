@@ -1,11 +1,49 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Film, Search, Menu, X, Sparkles, Popcorn } from 'lucide-react';
+import { Film, Search, Menu, X, Sparkles, Popcorn, User, LogOut, Shield, ChevronDown } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+
+const GoogleIcon = () => (
+  <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24">
+    <path
+      fill="#4285F4"
+      d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"
+    />
+    <path
+      fill="#34A853"
+      d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.36 24 12 24z"
+    />
+    <path
+      fill="#FBBC05"
+      d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.98 0 12s.45 3.82 1.25 5.42l4.03-3.15z"
+    />
+    <path
+      fill="#EA4335"
+      d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.36 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
+    />
+  </svg>
+);
 
 export default function Navbar({ onOpenSearch }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [isAuthLoading, setIsAuthLoading] = useState(false);
+  const userMenuRef = useRef(null);
+
+  const { user, isAdmin, loginWithGoogle, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setUserMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const navLinks = [
     { label: 'Home', path: '/' },
@@ -17,6 +55,7 @@ export default function Navbar({ onOpenSearch }) {
 
   const handleNavClick = (path) => {
     setMobileMenuOpen(false);
+    setUserMenuOpen(false);
     if (path.startsWith('/#')) {
       const elementId = path.replace('/#', '');
       if (location.pathname === '/') {
@@ -31,6 +70,27 @@ export default function Navbar({ onOpenSearch }) {
           if (el) el.scrollIntoView({ behavior: 'smooth' });
         }, 150);
       }
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setIsAuthLoading(true);
+    try {
+      await loginWithGoogle();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsAuthLoading(false);
+      setUserMenuOpen(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await logout();
+      setUserMenuOpen(false);
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -49,6 +109,10 @@ export default function Navbar({ onOpenSearch }) {
             to="/" 
             className="flex items-center gap-2.5 group focus:outline-none"
             id="nav-logo"
+            onClick={() => {
+              setMobileMenuOpen(false);
+              setUserMenuOpen(false);
+            }}
           >
             <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-cw-red to-cw-red-dark shadow-glow-sm group-hover:shadow-glow-red transition-all duration-300 group-hover:scale-105">
               <Film className="w-5 h-5 text-white" />
@@ -102,11 +166,11 @@ export default function Navbar({ onOpenSearch }) {
             <button
               onClick={onOpenSearch}
               id="desktop-search-btn"
-              className="hidden sm:flex items-center gap-3 px-3.5 py-2 rounded-xl bg-cw-surface/80 border border-white/10 text-gray-400 hover:text-white hover:border-cw-red/40 hover:bg-cw-surface transition-all duration-200 w-44 lg:w-56 text-left group"
+              className="hidden sm:flex items-center gap-3 px-3.5 py-2 rounded-xl bg-cw-surface/80 border border-white/10 text-gray-400 hover:text-white hover:border-cw-red/40 hover:bg-cw-surface transition-all duration-200 w-40 lg:w-52 text-left group"
               aria-label="Search movies"
             >
               <Search className="w-4 h-4 text-cw-red group-hover:scale-110 transition-transform" />
-              <span className="text-xs text-gray-400 group-hover:text-gray-300 truncate">Search movies, genres...</span>
+              <span className="text-xs text-gray-400 group-hover:text-gray-300 truncate">Search movies...</span>
               <kbd className="hidden lg:inline-block ml-auto text-[10px] font-mono px-1.5 py-0.5 rounded bg-black/40 text-gray-500 border border-white/10">
                 ⌘K
               </kbd>
@@ -121,6 +185,87 @@ export default function Navbar({ onOpenSearch }) {
             >
               <Search className="w-5 h-5 text-cw-red" />
             </button>
+
+            {/* Google Authentication (Desktop) */}
+            <div className="relative hidden sm:block" ref={userMenuRef}>
+              {user ? (
+                <div>
+                  <button
+                    onClick={() => setUserMenuOpen(!userMenuOpen)}
+                    className="flex items-center gap-2 p-1.5 pr-2.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 hover:border-cw-gold/40 transition-all duration-200"
+                    aria-label="User account menu"
+                  >
+                    {user.photoURL ? (
+                      <img
+                        src={user.photoURL}
+                        alt={user.displayName || 'User profile'}
+                        className="w-7 h-7 rounded-full object-cover border border-white/20"
+                      />
+                    ) : (
+                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-cw-red to-cw-gold text-white font-bold text-xs flex items-center justify-center">
+                        {(user.displayName || user.email || 'U')[0].toUpperCase()}
+                      </div>
+                    )}
+                    <span className="text-xs font-semibold text-gray-200 max-w-[90px] truncate">
+                      {user.displayName ? user.displayName.split(' ')[0] : 'Account'}
+                    </span>
+                    <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+                  </button>
+
+                  {/* Profile Dropdown */}
+                  {userMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-64 bg-cw-card border border-white/15 rounded-2xl shadow-2xl p-2 z-50 animate-fadeIn backdrop-blur-xl">
+                      <div className="p-3 border-b border-white/10">
+                        <p className="text-sm font-bold text-white truncate">
+                          {user.displayName || 'User'}
+                        </p>
+                        <p className="text-xs text-gray-400 truncate">
+                          {user.email}
+                        </p>
+                        {isAdmin && (
+                          <span className="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-full bg-cw-gold/15 border border-cw-gold/30 text-cw-gold text-[10px] font-bold">
+                            <Shield className="w-3 h-3" />
+                            Admin Verified
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="py-1">
+                        {isAdmin && (
+                          <Link
+                            to="/admin"
+                            onClick={() => setUserMenuOpen(false)}
+                            className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-white hover:bg-cw-red/20 rounded-xl transition-colors"
+                          >
+                            <Shield className="w-4 h-4 text-cw-red" />
+                            <span>Admin Dashboard</span>
+                          </Link>
+                        )}
+                        <button
+                          onClick={handleSignOut}
+                          className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-red-400 hover:bg-red-500/10 rounded-xl transition-colors text-left"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          <span>Sign Out</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <button
+                  onClick={handleGoogleSignIn}
+                  disabled={isAuthLoading}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 hover:border-white/30 text-white text-xs font-semibold transition-all duration-200 shadow-sm group"
+                  title="Sign in with Google / Gmail"
+                >
+                  <GoogleIcon />
+                  <span className="group-hover:text-white text-gray-200">
+                    {isAuthLoading ? 'Connecting...' : 'Sign In'}
+                  </span>
+                </button>
+              )}
+            </div>
 
             {/* Mobile Menu Toggle */}
             <button
@@ -137,15 +282,53 @@ export default function Navbar({ onOpenSearch }) {
 
       {/* Mobile Drawer Navigation */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-[#0D0F14]/98 border-b border-white/10 backdrop-blur-xl px-4 pt-3 pb-6 space-y-2 animate-fadeIn">
-          <div className="pb-3 border-b border-white/10 flex items-center justify-between text-xs text-gray-400">
-            <span className="flex items-center gap-1.5">
-              <Popcorn className="w-4 h-4 text-cw-red" />
-              Cinema ka asli adda
-            </span>
+        <div className="md:hidden bg-[#0D0F14]/98 border-b border-white/10 backdrop-blur-xl px-4 pt-3 pb-6 space-y-3 animate-fadeIn">
+          {/* User Status Bar in Mobile */}
+          <div className="p-3 rounded-2xl bg-white/5 border border-white/10">
+            {user ? (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {user.photoURL ? (
+                    <img
+                      src={user.photoURL}
+                      alt={user.displayName || 'User'}
+                      className="w-9 h-9 rounded-full object-cover border border-cw-gold/50"
+                    />
+                  ) : (
+                    <div className="w-9 h-9 rounded-full bg-cw-red text-white font-bold text-xs flex items-center justify-center">
+                      {(user.displayName || user.email || 'U')[0].toUpperCase()}
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-white truncate">
+                      {user.displayName || 'User'}
+                    </p>
+                    <p className="text-[11px] text-gray-400 truncate">
+                      {user.email}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleSignOut}
+                  className="p-2 text-xs text-red-400 hover:bg-red-500/15 rounded-lg flex items-center gap-1"
+                  title="Sign Out"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={handleGoogleSignIn}
+                disabled={isAuthLoading}
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white text-xs font-bold transition-all"
+              >
+                <GoogleIcon />
+                <span>{isAuthLoading ? 'Connecting to Google...' : 'Sign In with Google (Gmail)'}</span>
+              </button>
+            )}
           </div>
 
-          <div className="pt-2 flex flex-col space-y-1">
+          <div className="pt-1 flex flex-col space-y-1">
             {navLinks.map((link) => {
               const active = isActive(link.path);
               return link.path.startsWith('/#') ? (
@@ -171,9 +354,20 @@ export default function Navbar({ onOpenSearch }) {
                 </Link>
               );
             })}
+
+            {isAdmin && (
+              <Link
+                to="/admin"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-2 px-4 py-3 rounded-xl text-base font-semibold text-cw-gold bg-cw-gold/10 border border-cw-gold/20"
+              >
+                <Shield className="w-4 h-4 text-cw-gold" />
+                <span>Admin Dashboard</span>
+              </Link>
+            )}
           </div>
 
-          <div className="pt-4">
+          <div className="pt-2">
             <button
               onClick={() => {
                 setMobileMenuOpen(false);
