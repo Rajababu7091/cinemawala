@@ -1,6 +1,12 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { getStoredMovies, saveMovies, resetMoviesToDefault, DEFAULT_MOVIES } from '../data/movies';
-import { fetchMoviesFromCloud, syncMoviesToCloud } from '../services/cloudStorage';
+import { 
+  fetchMoviesFromCloud, 
+  syncMoviesToCloud, 
+  fetchSettingsFromCloud, 
+  syncSettingsToCloud,
+  DEFAULT_SITE_SETTINGS 
+} from '../services/cloudStorage';
 
 const MovieContext = createContext();
 
@@ -9,13 +15,23 @@ export function MovieProvider({ children }) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isCloudSynced, setIsCloudSynced] = useState(false);
 
+  // Site Settings (Hero heading, tagline, subtitle, hero wallpaper)
+  const [siteSettings, setSiteSettings] = useState(() => {
+    try {
+      const stored = localStorage.getItem('cinemawala_site_settings');
+      return stored ? { ...DEFAULT_SITE_SETTINGS, ...JSON.parse(stored) } : DEFAULT_SITE_SETTINGS;
+    } catch {
+      return DEFAULT_SITE_SETTINGS;
+    }
+  });
+
   // Initialize from storage and sync with Firebase Cloud Database
   useEffect(() => {
     const local = getStoredMovies();
     setMovies(local);
     setIsLoaded(true);
 
-    // Fetch live from Firebase Realtime Database
+    // Fetch live movies from Firebase Realtime Database
     fetchMoviesFromCloud().then((cloudMovies) => {
       if (cloudMovies && cloudMovies.length > 0) {
         setMovies(cloudMovies);
@@ -28,7 +44,28 @@ export function MovieProvider({ children }) {
         });
       }
     });
+
+    // Fetch live site settings from Firebase
+    fetchSettingsFromCloud().then((cloudSettings) => {
+      if (cloudSettings) {
+        setSiteSettings(cloudSettings);
+        try {
+          localStorage.setItem('cinemawala_site_settings', JSON.stringify(cloudSettings));
+        } catch {}
+      }
+    });
   }, []);
+
+  // Update site settings
+  const updateSiteSettings = (newSettings) => {
+    const merged = { ...siteSettings, ...newSettings };
+    setSiteSettings(merged);
+    try {
+      localStorage.setItem('cinemawala_site_settings', JSON.stringify(merged));
+    } catch {}
+    syncSettingsToCloud(merged);
+    return merged;
+  };
 
   // Add a new movie
   const addMovie = (newMovieData) => {
@@ -80,6 +117,8 @@ export function MovieProvider({ children }) {
         movies,
         isLoaded,
         isCloudSynced,
+        siteSettings,
+        updateSiteSettings,
         addMovie,
         updateMovie,
         deleteMovie,

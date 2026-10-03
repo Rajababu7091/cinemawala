@@ -8,7 +8,7 @@ import InstagramCtaBanner from '../components/InstagramCtaBanner';
 import SEO from '../components/SEO';
 
 export default function HomePage() {
-  const { movies } = useMovies();
+  const { movies, siteSettings } = useMovies();
   const [selectedCategory, setSelectedCategory] = useState('all');
 
   const trendingMovies = movies.filter(m => m.trending);
@@ -35,50 +35,53 @@ export default function HomePage() {
     }
   };
 
+  const wallpaper = siteSettings?.heroWallpaper || 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=1920&auto=format&fit=crop';
+  const tagline = siteSettings?.heroTagline || 'Cinema ka asli adda 🍿 • 100% Legal Streaming Guide';
+  const heading = siteSettings?.heroHeading || 'Your Daily Dose of Cinema 🎬';
+  const subtitle = siteSettings?.heroSubtitle || 'Discover memorable movie moments, stories and where to watch them.';
+
   return (
     <div className="space-y-16 sm:space-y-24">
       <SEO 
         title="CinemaWala – Discover Movies & Where to Watch"
-        description="Discover movies, memorable moments and find official platforms to watch them. Cinema ka asli adda 🍿"
+        description={subtitle}
       />
 
-      {/* ================= HERO SECTION ================= */}
-      <section className="relative min-h-[82vh] sm:min-h-[85vh] flex items-center justify-center -mt-6 sm:-mt-8 overflow-hidden rounded-b-3xl">
+      {/* ================= 3D CINEMATIC HERO SECTION ================= */}
+      <section className="relative min-h-[82vh] sm:min-h-[88vh] flex items-center justify-center -mt-6 sm:-mt-8 overflow-hidden rounded-b-3xl">
         {/* Background Image with Dark Cinematic Overlays */}
         <div className="absolute inset-0 z-0">
           <img
-            src="https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=1920&auto=format&fit=crop"
-            alt="Cinematic theater background"
-            className="w-full h-full object-cover object-center scale-105 filter brightness-40 transform animate-pulse-subtle"
+            src={wallpaper}
+            alt="Cinematic wallpaper"
+            className="w-full h-full object-cover object-center scale-105 filter brightness-40 transform transition-all duration-700"
           />
-          {/* Gradients */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0A0B0E] via-[#0A0B0E]/75 to-transparent" />
-          <div className="absolute inset-0 bg-radial-at-c from-transparent via-[#0A0B0E]/60 to-[#0A0B0E]" />
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-cw-red/15 rounded-full blur-3xl pointer-events-none" />
+          {/* 3D Depth Gradients and Lighting Glow */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0A0B0E] via-[#0A0B0E]/70 to-[#0A0B0E]/40" />
+          <div className="absolute inset-0 bg-radial-at-c from-transparent via-[#0A0B0E]/50 to-[#0A0B0E]" />
+          <div className="absolute -top-10 left-1/4 w-[500px] h-[500px] bg-cw-red/20 rounded-full blur-[120px] pointer-events-none animate-pulse-subtle" />
+          <div className="absolute -bottom-10 right-1/4 w-[450px] h-[450px] bg-cw-gold/15 rounded-full blur-[100px] pointer-events-none" />
         </div>
 
-        {/* Hero Content */}
+        {/* Hero Content with 3D Depth */}
         <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-16 sm:py-24">
           
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cw-surface/90 border border-cw-red/40 text-xs sm:text-sm font-semibold text-gray-200 backdrop-blur-md mb-6 shadow-glow-sm">
-            <span className="text-cw-red">●</span>
-            <span>Cinema ka asli adda 🍿</span>
-            <span className="text-gray-500">•</span>
-            <span className="text-cw-gold">100% Legal Streaming Guide</span>
+          {/* 3D Floating Badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cw-surface/90 border border-cw-red/40 text-xs sm:text-sm font-semibold text-gray-200 backdrop-blur-md mb-6 shadow-glow-sm hover:scale-105 transition-transform duration-300">
+            <span className="text-cw-red animate-pulse">●</span>
+            <span>{tagline}</span>
           </div>
 
           {/* Main Headline */}
-          <h1 className="font-display font-black text-4xl sm:text-6xl lg:text-7xl text-white tracking-tight leading-[1.1] mb-6">
-            Your Daily Dose of <br className="hidden sm:inline" />
-            <span className="bg-gradient-to-r from-white via-red-100 to-cw-red bg-clip-text text-transparent drop-shadow-sm">
-              Cinema 🎬
+          <h1 className="font-display font-black text-4xl sm:text-6xl lg:text-7xl text-white tracking-tight leading-[1.1] mb-6 drop-shadow-2xl">
+            <span className="bg-gradient-to-r from-white via-red-100 to-cw-red bg-clip-text text-transparent">
+              {heading}
             </span>
           </h1>
 
           {/* Subtitle */}
-          <p className="max-w-2xl mx-auto text-base sm:text-xl text-gray-300 font-normal leading-relaxed mb-8">
-            Discover memorable movie moments, stories and where to watch them.
+          <p className="max-w-2xl mx-auto text-base sm:text-xl text-gray-300 font-normal leading-relaxed mb-8 drop-shadow">
+            {subtitle}
           </p>
 
           {/* CTA Buttons */}
