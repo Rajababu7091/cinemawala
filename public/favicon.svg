@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <defs>
+    <linearGradient id="cwGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF2A3A"/>
+      <stop offset="100%" stop-color="#B20710"/>
+    </linearGradient>
+  </defs>
+  <rect width="48" height="48" rx="12" fill="#0A0B0E"/>
+  <rect x="2" y="2" width="44" height="44" rx="10" fill="none" stroke="#222634" stroke-width="1.5"/>
+  <!-- Film Reel / Clapperboard stylized -->
+  <path d="M12 14C12 12.8954 12.8954 12 14 12H34C35.1046 12 36 12.8954 36 14V34C36 35.1046 35.1046 36 34 36H14C12.8954 36 12 35.1046 12 34V14Z" fill="#141720" stroke="#333848" stroke-width="1.5"/>
+  <path d="M12 20H36" stroke="#2A2F3D" stroke-width="1.5"/>
+  <path d="M18 12L15 20M26 12L23 20M34 12L31 20" stroke="#454D63" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- Play Button Accent -->
+  <polygon points="21,24 21,32 30,28" fill="url(#cwGrad)"/>
+</svg>
