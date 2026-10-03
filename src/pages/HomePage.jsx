@@ -43,7 +43,7 @@ export default function HomePage() {
 
   return (
     <div className="space-y-16 sm:space-y-24">
-      <SEO 
+      <SEO
         title="CinemaWala – Discover Movies & Where to Watch"
         description={subtitle}
       />
@@ -66,7 +66,7 @@ export default function HomePage() {
 
         {/* Hero Content with 3D Depth */}
         <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-16 sm:py-24">
-          
+
           {/* 3D Floating Badges (Tagline & Instagram) */}
           <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#12141C]/90 border border-cw-red/50 text-xs sm:text-sm font-bold text-gray-200 backdrop-blur-md shadow-[0_0_15px_rgba(229,9,20,0.3)] hover:scale-105 transition-transform duration-300">
@@ -134,7 +134,7 @@ export default function HomePage() {
 
           {/* Down Indicator */}
           <div className="mt-8 flex justify-center">
-            <button 
+            <button
               onClick={() => scrollToSection('trending')}
               className="text-gray-500 hover:text-cw-red transition-colors animate-bounce p-2"
               aria-label="Scroll down"
