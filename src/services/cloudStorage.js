@@ -3,6 +3,8 @@
  * Connects to Google Firebase Realtime Database
  */
 
+import { auth } from './firebase';
+
 export const FIREBASE_DB_URL = 'https://cinemawala-2cd35-default-rtdb.firebaseio.com';
 
 export const DEFAULT_SITE_SETTINGS = {
@@ -11,6 +13,18 @@ export const DEFAULT_SITE_SETTINGS = {
   heroSubtitle: 'Discover memorable movie moments, stories and where to watch them.',
   heroWallpaper: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=1920&auto=format&fit=crop',
 };
+
+async function getAuthQuery() {
+  try {
+    if (auth && auth.currentUser) {
+      const token = await auth.currentUser.getIdToken();
+      if (token) return `?auth=${token}`;
+    }
+  } catch (err) {
+    console.warn('Could not get auth token for cloud request:', err);
+  }
+  return '';
+}
 
 /**
  * Fetch all movies from Firebase Cloud Database
@@ -42,7 +56,8 @@ export async function fetchMoviesFromCloud() {
  */
 export async function syncMoviesToCloud(moviesList) {
   try {
-    const res = await fetch(`${FIREBASE_DB_URL}/movies.json`, {
+    const authQuery = await getAuthQuery();
+    const res = await fetch(`${FIREBASE_DB_URL}/movies.json${authQuery}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -83,7 +98,8 @@ export async function fetchSettingsFromCloud() {
  */
 export async function syncSettingsToCloud(settings) {
   try {
-    const res = await fetch(`${FIREBASE_DB_URL}/settings.json`, {
+    const authQuery = await getAuthQuery();
+    const res = await fetch(`${FIREBASE_DB_URL}/settings.json${authQuery}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -116,7 +132,8 @@ export async function fetchAdminPasscodeFromCloud() {
  */
 export async function syncAdminPasscodeToCloud(passcode) {
   try {
-    const res = await fetch(`${FIREBASE_DB_URL}/admin_passcode.json`, {
+    const authQuery = await getAuthQuery();
+    const res = await fetch(`${FIREBASE_DB_URL}/admin_passcode.json${authQuery}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
