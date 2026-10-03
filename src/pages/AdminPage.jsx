@@ -12,7 +12,7 @@ import SEO from '../components/SEO';
 const DEFAULT_PASSCODE = 'cinemawala7091';
 
 export default function AdminPage() {
-  const { movies, addMovie, updateMovie, deleteMovie, resetToDefault } = useMovies();
+  const { movies, isCloudSynced, addMovie, updateMovie, deleteMovie, resetToDefault } = useMovies();
 
   // Authentication State
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
@@ -332,6 +332,10 @@ export default function AdminPage() {
               <h1 className="text-lg font-bold text-white">CinemaWala Management Console</h1>
               <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                 Admin Verified
+              </span>
+              <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
+                <span>Firebase Cloud Active</span>
               </span>
             </div>
             <p className="text-xs text-gray-400">
