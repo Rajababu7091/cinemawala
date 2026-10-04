@@ -7,6 +7,9 @@ import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import SearchModal from './components/SearchModal';
+import TrailerModal from './components/TrailerModal';
+import WatchlistModal from './components/WatchlistModal';
+import SurpriseMeModal from './components/SurpriseMeModal';
 
 // Pages
 import HomePage from './pages/HomePage';
@@ -36,6 +39,15 @@ export default function App() {
             isOpen={isSearchOpen}
             onClose={() => setIsSearchOpen(false)}
           />
+
+          {/* In-App HD Trailer Player Modal */}
+          <TrailerModal />
+
+          {/* User Watchlist Modal */}
+          <WatchlistModal />
+
+          {/* Surprise Me / Random Movie Picker Modal */}
+          <SurpriseMeModal />
 
           {/* Main App Content */}
           <main className="flex-grow">
