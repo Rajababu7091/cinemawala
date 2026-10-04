@@ -111,6 +111,48 @@ export function MovieProvider({ children }) {
            movies.find(m => String(m.id) === String(slug));
   };
 
+  // Watchlist State (persisted in localStorage)
+  const [watchlist, setWatchlist] = useState(() => {
+    try {
+      const stored = localStorage.getItem('cinemawala_watchlist');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const toggleWatchlist = (movieId) => {
+    const idStr = String(movieId);
+    setWatchlist((prev) => {
+      const updated = prev.includes(idStr)
+        ? prev.filter((id) => id !== idStr)
+        : [...prev, idStr];
+      try {
+        localStorage.setItem('cinemawala_watchlist', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
+  const isInWatchlist = (movieId) => {
+    return watchlist.includes(String(movieId));
+  };
+
+  // Trailer Modal State
+  const [activeTrailerMovie, setActiveTrailerMovie] = useState(null);
+  const openTrailer = (movie) => setActiveTrailerMovie(movie);
+  const closeTrailer = () => setActiveTrailerMovie(null);
+
+  // Surprise Me Modal State
+  const [isSurpriseModalOpen, setIsSurpriseModalOpen] = useState(false);
+  const openSurpriseModal = () => setIsSurpriseModalOpen(true);
+  const closeSurpriseModal = () => setIsSurpriseModalOpen(false);
+
+  // Watchlist Modal / Drawer State
+  const [isWatchlistModalOpen, setIsWatchlistModalOpen] = useState(false);
+  const openWatchlistModal = () => setIsWatchlistModalOpen(true);
+  const closeWatchlistModal = () => setIsWatchlistModalOpen(false);
+
   return (
     <MovieContext.Provider
       value={{
@@ -124,6 +166,18 @@ export function MovieProvider({ children }) {
         deleteMovie,
         resetToDefault,
         getMovieBySlug,
+        watchlist,
+        toggleWatchlist,
+        isInWatchlist,
+        activeTrailerMovie,
+        openTrailer,
+        closeTrailer,
+        isSurpriseModalOpen,
+        openSurpriseModal,
+        closeSurpriseModal,
+        isWatchlistModalOpen,
+        openWatchlistModal,
+        closeWatchlistModal,
       }}
     >
       {children}
