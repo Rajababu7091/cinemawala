@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Star, Play, Calendar, Globe, Sparkles, Film } from 'lucide-react';
+import { Star, Play, Calendar, Globe, Sparkles, Film, Heart } from 'lucide-react';
+import { useMovies } from '../context/MovieContext';
 
 export default function MovieCard({ movie, featured = false }) {
   if (!movie) return null;
@@ -50,6 +51,21 @@ export default function MovieCard({ movie, featured = false }) {
     return { bg: 'bg-white/10 text-gray-300 border-white/20', text: platform || 'Streaming' };
   };
 
+  const { isInWatchlist, toggleWatchlist, openTrailer } = useMovies();
+  const inWatchlist = isInWatchlist(movie.id);
+
+  const handleWatchlistClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleWatchlist(movie.id);
+  };
+
+  const handleTrailerClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    openTrailer(movie);
+  };
+
   const platformBadge = getPlatformBadge(movie.platform);
 
   return (
@@ -92,7 +108,7 @@ export default function MovieCard({ movie, featured = false }) {
 
         {/* 3D Floating Top Badges (Pops Out) */}
         <div 
-          className="absolute top-2.5 inset-x-2.5 flex items-center justify-between pointer-events-none z-20 transition-transform duration-200"
+          className="absolute top-2.5 inset-x-2.5 flex items-center justify-between z-30 transition-transform duration-200 pointer-events-none"
           style={{ transform: isHovered ? 'translateZ(35px)' : 'translateZ(0px)' }}
         >
           {/* Rating */}
@@ -101,35 +117,63 @@ export default function MovieCard({ movie, featured = false }) {
             <span>{movie.rating ? Number(movie.rating).toFixed(1) : '8.0'}</span>
           </div>
 
-          {/* Platform or Trending Badge */}
-          {movie.trending ? (
-            <div className="px-2.5 py-0.5 rounded-full bg-gradient-to-r from-cw-red via-rose-500 to-cw-red-dark text-white text-[11px] font-extrabold uppercase tracking-wider shadow-glow-sm border border-cw-red/50 animate-pulse">
-              Trending 🔥
-            </div>
-          ) : (
-            <div className={`px-2 py-0.5 rounded-full text-[10px] font-bold border backdrop-blur-md ${platformBadge.bg}`}>
-              {platformBadge.text}
-            </div>
-          )}
+          {/* Right Group: Platform + Watchlist Button */}
+          <div className="flex items-center gap-1.5 pointer-events-auto">
+            {movie.trending ? (
+              <div className="px-2.5 py-0.5 rounded-full bg-gradient-to-r from-cw-red via-rose-500 to-cw-red-dark text-white text-[11px] font-extrabold uppercase tracking-wider shadow-glow-sm border border-cw-red/50 animate-pulse">
+                Trending 🔥
+              </div>
+            ) : (
+              <div className={`px-2 py-0.5 rounded-full text-[10px] font-bold border backdrop-blur-md ${platformBadge.bg}`}>
+                {platformBadge.text}
+              </div>
+            )}
+
+            {/* Watchlist Toggle Heart */}
+            <button
+              onClick={handleWatchlistClick}
+              aria-label={inWatchlist ? 'Remove from Watchlist' : 'Add to Watchlist'}
+              title={inWatchlist ? 'Saved in Watchlist' : 'Add to Watchlist'}
+              className={`p-1.5 rounded-full backdrop-blur-md transition-all duration-200 shadow-md ${
+                inWatchlist
+                  ? 'bg-cw-red text-white scale-110 shadow-glow-sm border border-cw-red'
+                  : 'bg-black/60 text-white/80 hover:text-white hover:bg-black/90 hover:scale-110 border border-white/20'
+              }`}
+            >
+              <Heart className={`w-3.5 h-3.5 ${inWatchlist ? 'fill-white text-white' : ''}`} />
+            </button>
+          </div>
         </div>
 
         {/* Cinematic Bottom Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-[#0D0E14] via-[#0D0E14]/30 to-transparent opacity-90 group-hover:opacity-95 transition-opacity" />
 
         {/* 3D Floating Hover Play Action Overlay */}
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-xs opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center p-4 text-center z-20">
+        <div className="absolute inset-0 bg-black/65 backdrop-blur-xs opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center p-4 text-center z-20 pointer-events-none">
           <div 
-            className="w-14 h-14 rounded-full bg-gradient-to-tr from-cw-red via-rose-500 to-amber-500 text-white flex items-center justify-center shadow-[0_0_30px_rgba(229,9,20,0.6)] transform scale-75 group-hover:scale-100 transition-all duration-300 mb-3"
+            className="w-13 h-13 rounded-full bg-gradient-to-tr from-cw-red via-rose-500 to-amber-500 text-white flex items-center justify-center shadow-[0_0_30px_rgba(229,9,20,0.6)] transform scale-75 group-hover:scale-100 transition-all duration-300 mb-2.5"
             style={{ transform: isHovered ? 'translateZ(50px)' : 'translateZ(0px)' }}
           >
-            <Play className="w-6 h-6 fill-white text-white translate-x-0.5" />
+            <Play className="w-5 h-5 fill-white text-white translate-x-0.5" />
           </div>
-          <span 
-            className="text-xs font-black text-white tracking-wide bg-cw-red/90 px-4 py-1.5 rounded-full border border-white/20 shadow-lg"
+
+          <div 
+            className="flex items-center gap-2 pointer-events-auto"
             style={{ transform: isHovered ? 'translateZ(40px)' : 'translateZ(0px)' }}
           >
-            Watch & Details &rarr;
-          </span>
+            <button
+              onClick={handleTrailerClick}
+              className="px-3 py-1.5 rounded-full text-xs font-bold bg-white/15 hover:bg-white/25 text-white border border-white/30 backdrop-blur-md shadow-lg transition-all"
+            >
+              Trailer HD
+            </button>
+            <span 
+              className="text-xs font-black text-white tracking-wide bg-cw-red/90 px-3.5 py-1.5 rounded-full border border-white/20 shadow-lg"
+            >
+              Details &rarr;
+            </span>
+          </div>
+
           {movie.description && (
             <p className="text-[11px] text-gray-300 mt-2 line-clamp-2 max-w-[200px]">
               {movie.description}
