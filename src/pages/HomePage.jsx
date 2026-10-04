@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Film, Play, TrendingUp, Sparkles, Compass, Star, ChevronDown, CheckCircle2 } from 'lucide-react';
+import { Film, Play, TrendingUp, Sparkles, Compass, Star, ChevronDown, CheckCircle2, Dices } from 'lucide-react';
 import { InstagramIcon } from '../components/SocialIcons';
 import { useMovies } from '../context/MovieContext';
 import MovieCard from '../components/MovieCard';
@@ -9,7 +9,7 @@ import InstagramCtaBanner from '../components/InstagramCtaBanner';
 import SEO from '../components/SEO';
 
 export default function HomePage() {
-  const { movies, siteSettings } = useMovies();
+  const { movies, siteSettings, openSurpriseModal } = useMovies();
   const [selectedCategory, setSelectedCategory] = useState('all');
 
   const trendingMovies = movies.filter(m => m.trending);
@@ -98,18 +98,26 @@ export default function HomePage() {
           </p>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-5">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
             <button
               onClick={() => scrollToSection('categories')}
-              className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-cw-red via-rose-600 to-cw-red-dark hover:from-red-600 hover:to-cw-red text-white font-black text-base sm:text-lg shadow-[0_10px_30px_rgba(229,9,20,0.45)] hover:shadow-[0_15px_40px_rgba(229,9,20,0.65)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2.5"
+              className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-gradient-to-r from-cw-red via-rose-600 to-cw-red-dark hover:from-red-600 hover:to-cw-red text-white font-black text-sm sm:text-base shadow-[0_10px_30px_rgba(229,9,20,0.45)] hover:shadow-[0_15px_40px_rgba(229,9,20,0.65)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2"
             >
               <Compass className="w-5 h-5 text-white" />
               <span>Explore Movies</span>
             </button>
 
             <button
+              onClick={openSurpriseModal}
+              className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500/20 via-yellow-500/10 to-amber-600/20 hover:from-amber-500/30 hover:to-amber-600/30 text-cw-gold hover:text-white font-black text-sm sm:text-base border border-cw-gold/40 hover:border-cw-gold backdrop-blur-md shadow-lg hover:shadow-[0_10px_30px_rgba(245,197,24,0.35)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2 group"
+            >
+              <Dices className="w-5 h-5 text-cw-gold group-hover:rotate-180 transition-transform duration-500" />
+              <span>Surprise Me 🎲</span>
+            </button>
+
+            <button
               onClick={() => scrollToSection('trending')}
-              className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-[#141620]/90 hover:bg-white/10 text-white font-bold text-base sm:text-lg border border-white/15 hover:border-cw-gold/50 backdrop-blur-md shadow-lg hover:shadow-[0_10px_30px_rgba(245,197,24,0.25)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2.5"
+              className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-[#141620]/90 hover:bg-white/10 text-white font-bold text-sm sm:text-base border border-white/15 hover:border-cw-gold/50 backdrop-blur-md shadow-lg hover:shadow-[0_10px_30px_rgba(245,197,24,0.25)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2"
             >
               <TrendingUp className="w-5 h-5 text-cw-gold" />
               <span>Trending Now 🔥</span>
