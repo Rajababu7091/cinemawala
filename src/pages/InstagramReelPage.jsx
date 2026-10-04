@@ -55,7 +55,7 @@ export default function InstagramReelPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-10">
-      <SEO 
+      <SEO
         title={`Watch ${movie.title} – CinemaWala Instagram Reel`}
         description={`Found ${movie.title} on Instagram? Watch it on an official platform. 🍿`}
         image={movie.poster}
@@ -145,7 +145,7 @@ export default function InstagramReelPage() {
             <h3 className="text-lg sm:text-xl font-bold text-white">
               Watch it on an official platform.
             </h3>
-            
+
             <p className="text-xs text-gray-400 max-w-sm mx-auto mt-1">
               Available on <strong className="text-white">{movie.platform || 'Official Partner'}</strong>. No annoying ads or unauthorized sites.
             </p>
@@ -178,11 +178,10 @@ export default function InstagramReelPage() {
           <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
             <button
               onClick={() => toggleWatchlist(movie.id)}
-              className={`inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border text-xs font-bold transition-all ${
-                inWatchlist
+              className={`inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border text-xs font-bold transition-all ${inWatchlist
                   ? 'bg-cw-red/20 border-cw-red text-cw-red'
                   : 'bg-white/5 border-white/10 text-gray-300 hover:text-white hover:bg-white/10'
-              }`}
+                }`}
             >
               <Heart className={`w-3.5 h-3.5 ${inWatchlist ? 'fill-cw-red text-cw-red' : ''}`} />
               <span>{inWatchlist ? 'Saved in Watchlist' : 'Add to Watchlist'}</span>
