@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Film, Search, Menu, X, Sparkles, Popcorn, User, LogOut, Shield, ChevronDown } from 'lucide-react';
+import { Film, Search, Menu, X, Sparkles, Popcorn, User, LogOut, Shield, ChevronDown, Heart, Dices } from 'lucide-react';
 import { InstagramIcon } from './SocialIcons';
 import { useAuth } from '../context/AuthContext';
+import { useMovies } from '../context/MovieContext';
 
 const GoogleIcon = () => (
   <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24">
@@ -32,6 +33,7 @@ export default function Navbar({ onOpenSearch }) {
   const userMenuRef = useRef(null);
 
   const { user, isAdmin, loginWithGoogle, logout } = useAuth();
+  const { watchlist, openWatchlistModal, openSurpriseModal } = useMovies();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -177,12 +179,38 @@ export default function Navbar({ onOpenSearch }) {
               </kbd>
             </button>
 
+            {/* Surprise Me / Reel Spinner */}
+            <button
+              onClick={openSurpriseModal}
+              className="hidden lg:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-cw-surface/80 border border-cw-gold/30 text-cw-gold hover:text-white hover:border-cw-gold hover:bg-cw-gold/15 text-xs font-bold transition-all shadow-sm group"
+              title="Surprise Me! Pick a random movie"
+            >
+              <Dices className="w-3.5 h-3.5 text-cw-gold group-hover:rotate-180 transition-transform duration-500" />
+              <span>Surprise Me 🎲</span>
+            </button>
+
+            {/* User Watchlist Trigger */}
+            <button
+              onClick={openWatchlistModal}
+              className="relative flex items-center gap-1.5 px-3 py-2 rounded-xl bg-cw-surface/80 border border-white/10 text-gray-300 hover:text-white hover:border-cw-red/50 hover:bg-cw-red/10 text-xs font-bold transition-all shadow-sm group"
+              title="My Watchlist"
+              aria-label="Open Watchlist"
+            >
+              <Heart className={`w-3.5 h-3.5 transition-colors ${watchlist.length > 0 ? 'text-cw-red fill-cw-red' : 'text-gray-400 group-hover:text-cw-red'}`} />
+              <span className="hidden sm:inline">Watchlist</span>
+              {watchlist.length > 0 && (
+                <span className="flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-cw-red text-white text-[10px] font-black shadow-glow-sm animate-pulse-subtle">
+                  {watchlist.length}
+                </span>
+              )}
+            </button>
+
             {/* Instagram Reels Link */}
             <a
               href="https://www.instagram.com/cinema.wala6746/reels/?hl=en"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden lg:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-yellow-500/10 border border-pink-500/30 text-pink-300 hover:text-white hover:border-pink-500 hover:from-pink-500/25 hover:to-purple-500/25 text-xs font-bold transition-all shadow-sm group"
+              className="hidden xl:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-yellow-500/10 border border-pink-500/30 text-pink-300 hover:text-white hover:border-pink-500 hover:from-pink-500/25 hover:to-purple-500/25 text-xs font-bold transition-all shadow-sm group"
               title="Watch CinemaWala on Instagram Reels (@cinema.wala6746)"
             >
               <InstagramIcon className="w-3.5 h-3.5 text-pink-400 group-hover:rotate-12 transition-transform" />
@@ -378,6 +406,31 @@ export default function Navbar({ onOpenSearch }) {
                 <span>Admin Dashboard</span>
               </Link>
             )}
+
+            {/* Mobile Watchlist & Surprise Me Buttons */}
+            <div className="grid grid-cols-2 gap-2 pt-1 pb-1">
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  openWatchlistModal();
+                }}
+                className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-white/5 border border-white/15 text-white font-bold text-xs hover:border-cw-red/40"
+              >
+                <Heart className={`w-4 h-4 ${watchlist.length > 0 ? 'text-cw-red fill-cw-red' : 'text-gray-400'}`} />
+                <span>Watchlist ({watchlist.length})</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  openSurpriseModal();
+                }}
+                className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-cw-gold/15 border border-cw-gold/30 text-cw-gold font-bold text-xs hover:bg-cw-gold/25"
+              >
+                <Dices className="w-4 h-4" />
+                <span>Surprise Me 🎲</span>
+              </button>
+            </div>
 
             {/* Official Instagram Reels Link in Mobile */}
             <a
