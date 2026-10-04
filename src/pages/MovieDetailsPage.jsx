@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
   Star, Calendar, Globe, Clock, User, Film, ExternalLink, 
-  Share2, ArrowLeft, Check, Sparkles, AlertCircle, ShieldCheck, Play, Download 
+  Share2, ArrowLeft, Check, Sparkles, AlertCircle, ShieldCheck, Play, Download,
+  Heart, MessageCircle
 } from 'lucide-react';
 import { useMovies } from '../context/MovieContext';
 import MovieCard from '../components/MovieCard';
@@ -10,7 +11,7 @@ import SEO from '../components/SEO';
 
 export default function MovieDetailsPage() {
   const { movieSlug } = useParams();
-  const { getMovieBySlug, movies } = useMovies();
+  const { getMovieBySlug, movies, isInWatchlist, toggleWatchlist, openTrailer } = useMovies();
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
 
@@ -43,12 +44,20 @@ export default function MovieDetailsPage() {
     ))
     .slice(0, 4);
 
+  const inWatchlist = isInWatchlist(movie.id);
+
   const handleShare = () => {
     if (navigator.clipboard) {
       navigator.clipboard.writeText(window.location.href);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
+  };
+
+  const handleWhatsAppShare = () => {
+    if (!movie) return;
+    const text = `🍿 Check out "${movie.title}" (${movie.year}) on CinemaWala! Find where to watch officially:\n${window.location.href}`;
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
   };
 
   // Platform styling helper
@@ -134,24 +143,61 @@ export default function MovieDetailsPage() {
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
             </div>
 
-            {/* Quick Share / IG Link */}
-            <div className="flex gap-2">
+            {/* Action Buttons under Poster */}
+            <div className="space-y-2.5">
+              {/* Watch Trailer HD Button */}
               <button
-                onClick={handleShare}
-                className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-cw-surface border border-white/10 text-white font-medium text-xs hover:bg-white/10 transition-colors"
+                onClick={() => openTrailer(movie)}
+                className="w-full flex items-center justify-center gap-2.5 py-3.5 px-4 rounded-xl bg-gradient-to-r from-cw-red/20 via-rose-600/20 to-cw-red/20 hover:from-cw-red/30 hover:to-cw-red/30 border border-cw-red/50 text-white font-bold text-sm shadow-[0_0_20px_rgba(229,9,20,0.3)] hover:scale-[1.02] active:scale-95 transition-all group"
               >
-                {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Share2 className="w-4 h-4" />}
-                <span>{copied ? 'Link Copied!' : 'Share Movie'}</span>
+                <div className="w-6 h-6 rounded-full bg-cw-red flex items-center justify-center shadow-glow-sm">
+                  <Play className="w-3.5 h-3.5 fill-white text-white translate-x-0.5" />
+                </div>
+                <span>Watch Official Trailer HD</span>
               </button>
-              
-              <Link
-                to={`/watch/${movie.slug || movie.id}`}
-                className="flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl bg-pink-500/10 border border-pink-500/30 text-pink-400 hover:bg-pink-500/20 text-xs font-semibold transition-colors"
-                title="View lightweight Instagram landing page"
+
+              {/* Save to Watchlist Button */}
+              <button
+                onClick={() => toggleWatchlist(movie.id)}
+                className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border text-xs sm:text-sm font-bold transition-all ${
+                  inWatchlist
+                    ? 'bg-cw-red/20 border-cw-red text-cw-red shadow-glow-sm'
+                    : 'bg-cw-surface border-white/10 text-gray-200 hover:text-white hover:border-white/30 hover:bg-white/10'
+                }`}
               >
-                <span>IG Reel Page</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </Link>
+                <Heart className={`w-4 h-4 ${inWatchlist ? 'fill-cw-red text-cw-red' : ''}`} />
+                <span>{inWatchlist ? 'Saved in Your Watchlist ❤️' : 'Save to Watchlist'}</span>
+              </button>
+
+              {/* Share & External Row */}
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  onClick={handleWhatsAppShare}
+                  className="flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl bg-[#25D366]/15 border border-[#25D366]/40 text-[#25D366] hover:bg-[#25D366]/25 font-bold text-xs transition-colors"
+                  title="Share on WhatsApp"
+                >
+                  <MessageCircle className="w-3.5 h-3.5" />
+                  <span>WhatsApp</span>
+                </button>
+
+                <button
+                  onClick={handleShare}
+                  className="flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl bg-cw-surface border border-white/10 text-white font-medium text-xs hover:bg-white/10 transition-colors"
+                  title="Copy link to clipboard"
+                >
+                  {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Share2 className="w-3.5 h-3.5" />}
+                  <span>{copied ? 'Copied!' : 'Copy Link'}</span>
+                </button>
+                
+                <Link
+                  to={`/watch/${movie.slug || movie.id}`}
+                  className="flex items-center justify-center gap-1 py-2.5 px-2 rounded-xl bg-pink-500/10 border border-pink-500/30 text-pink-400 hover:bg-pink-500/20 text-xs font-semibold transition-colors"
+                  title="View Instagram reel landing page"
+                >
+                  <span>IG Reel</span>
+                  <ExternalLink className="w-3 h-3" />
+                </Link>
+              </div>
             </div>
           </div>
 
@@ -189,8 +235,8 @@ export default function MovieDetailsPage() {
                   </div>
                 </div>
 
-                {/* The "Watch Now" and "Download" Buttons */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-shrink-0">
+                {/* The "Watch Now", "Trailer", and "Download" Buttons */}
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 flex-shrink-0">
                   <a
                     href={movie.watchUrl || 'https://www.netflix.com'}
                     target="_blank"
@@ -203,12 +249,22 @@ export default function MovieDetailsPage() {
                     <ExternalLink className="w-4 h-4 ml-1 opacity-80" />
                   </a>
 
+                  <button
+                    onClick={() => openTrailer(movie)}
+                    id="official-trailer-btn"
+                    className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-cw-surface hover:bg-white/10 text-white font-bold text-sm sm:text-base border border-white/15 hover:border-cw-red/50 shadow-md hover:scale-102 active:scale-95 transition-all text-center"
+                    title="Watch Official Trailer HD"
+                  >
+                    <Play className="w-4 h-4 fill-cw-red text-cw-red" />
+                    <span>Trailer</span>
+                  </button>
+
                   <a
                     href={movie.watchUrl || 'https://www.netflix.com'}
                     target="_blank"
                     rel="noopener noreferrer"
                     id="official-download-btn"
-                    className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-cw-surface hover:bg-white/10 text-white font-bold text-sm sm:text-base border border-white/15 hover:border-cw-red/50 shadow-md hover:scale-102 active:scale-95 transition-all text-center"
+                    className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-cw-surface hover:bg-white/10 text-white font-bold text-sm sm:text-base border border-white/15 hover:border-cw-red/50 shadow-md hover:scale-102 active:scale-95 transition-all text-center"
                     title="Download on official platform"
                   >
                     <Download className="w-5 h-5 text-cw-red" />
