@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Film, Play, ExternalLink, ShieldCheck, ArrowLeft, Star, Download } from 'lucide-react';
+import { Film, Play, ExternalLink, ShieldCheck, ArrowLeft, Star, Download, Heart, MessageCircle, Share2, Check } from 'lucide-react';
 import { InstagramIcon } from '../components/SocialIcons';
 import { useMovies } from '../context/MovieContext';
 import MovieCard from '../components/MovieCard';
@@ -8,7 +8,8 @@ import SEO from '../components/SEO';
 
 export default function InstagramReelPage() {
   const { movieSlug } = useParams();
-  const { getMovieBySlug, movies } = useMovies();
+  const { getMovieBySlug, movies, isInWatchlist, toggleWatchlist, openTrailer } = useMovies();
+  const [copied, setCopied] = useState(false);
 
   const movie = getMovieBySlug(movieSlug);
 
@@ -35,6 +36,22 @@ export default function InstagramReelPage() {
   const relatedMovies = movies
     .filter(m => m.id !== movie.id)
     .slice(0, 4);
+
+  const inWatchlist = movie ? isInWatchlist(movie.id) : false;
+
+  const handleShare = () => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const handleWhatsAppShare = () => {
+    if (!movie) return;
+    const text = `🍿 Check out "${movie.title}" on CinemaWala! Find where to watch officially:\n${window.location.href}`;
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+  };
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-10">
@@ -112,7 +129,7 @@ export default function InstagramReelPage() {
         </p>
 
         {/* Instagram Hook Prompts */}
-        <div className="mt-8 pt-6 border-t border-white/10 space-y-2">
+        <div className="mt-8 pt-6 border-t border-white/10 space-y-4">
           <a
             href="https://www.instagram.com/cinema.wala6746/reels/?hl=en"
             target="_blank"
@@ -124,43 +141,78 @@ export default function InstagramReelPage() {
             <span>Watch more on Instagram @cinema.wala6746 🍿</span>
           </a>
 
-          <h3 className="text-lg sm:text-xl font-bold text-white">
-            Watch it on an official platform.
-          </h3>
-          
-          <p className="text-xs text-gray-400 max-w-sm mx-auto">
-            Available on <strong className="text-white">{movie.platform || 'Official Partner'}</strong>. No annoying ads or unauthorized sites.
-          </p>
+          <div>
+            <h3 className="text-lg sm:text-xl font-bold text-white">
+              Watch it on an official platform.
+            </h3>
+            
+            <p className="text-xs text-gray-400 max-w-sm mx-auto mt-1">
+              Available on <strong className="text-white">{movie.platform || 'Official Partner'}</strong>. No annoying ads or unauthorized sites.
+            </p>
+          </div>
 
-          {/* Primary CTA Buttons: Watch Now and Download */}
-          <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
+          {/* Primary CTA Buttons: Watch Now, Trailer, Download */}
+          <div className="flex flex-wrap items-center justify-center gap-3">
             <a
               href={movie.watchUrl || 'https://www.netflix.com'}
               target="_blank"
               rel="noopener noreferrer"
               id="reel-watch-now-btn"
-              className="inline-flex items-center justify-center gap-2.5 w-full sm:w-auto sm:min-w-[180px] px-7 py-3.5 rounded-2xl bg-gradient-to-r from-cw-red to-cw-red-dark text-white font-extrabold text-base shadow-glow-red hover:scale-105 active:scale-95 transition-all"
+              className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-gradient-to-r from-cw-red to-cw-red-dark text-white font-extrabold text-sm sm:text-base shadow-glow-red hover:scale-105 active:scale-95 transition-all"
             >
-              <Play className="w-5 h-5 fill-white text-white" />
-              <span>Watch Now</span>
-              <ExternalLink className="w-4 h-4 opacity-80" />
+              <Play className="w-4 h-4 fill-white text-white" />
+              <span>Watch on {movie.platform || 'Partner'}</span>
+              <ExternalLink className="w-3.5 h-3.5 opacity-80" />
             </a>
 
-            <a
-              href={movie.watchUrl || 'https://www.netflix.com'}
-              target="_blank"
-              rel="noopener noreferrer"
-              id="reel-download-btn"
-              className="inline-flex items-center justify-center gap-2 w-full sm:w-auto sm:min-w-[180px] px-6 py-3.5 rounded-2xl bg-cw-surface hover:bg-white/10 text-white font-bold text-base border border-white/15 hover:border-cw-red/50 shadow-md hover:scale-105 active:scale-95 transition-all"
-              title="Download on official platform"
+            <button
+              onClick={() => openTrailer(movie)}
+              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm sm:text-base border border-white/20 hover:border-cw-red/50 shadow-md hover:scale-105 active:scale-95 transition-all"
             >
-              <Download className="w-5 h-5 text-cw-red" />
-              <span>Download</span>
-              <ExternalLink className="w-4 h-4 opacity-70 text-gray-400" />
-            </a>
+              <Play className="w-4 h-4 fill-cw-red text-cw-red" />
+              <span>Watch Trailer HD</span>
+            </button>
           </div>
 
-          <div className="flex items-center justify-center gap-1.5 text-[11px] text-gray-400 pt-3">
+          {/* Secondary Actions: Watchlist, Share WhatsApp, Copy, Full Details */}
+          <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+            <button
+              onClick={() => toggleWatchlist(movie.id)}
+              className={`inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border text-xs font-bold transition-all ${
+                inWatchlist
+                  ? 'bg-cw-red/20 border-cw-red text-cw-red'
+                  : 'bg-white/5 border-white/10 text-gray-300 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              <Heart className={`w-3.5 h-3.5 ${inWatchlist ? 'fill-cw-red text-cw-red' : ''}`} />
+              <span>{inWatchlist ? 'Saved in Watchlist' : 'Add to Watchlist'}</span>
+            </button>
+
+            <button
+              onClick={handleWhatsAppShare}
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#25D366]/15 border border-[#25D366]/40 text-[#25D366] hover:bg-[#25D366]/25 font-bold text-xs transition-colors"
+            >
+              <MessageCircle className="w-3.5 h-3.5" />
+              <span>Share on WhatsApp</span>
+            </button>
+
+            <button
+              onClick={handleShare}
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:text-white hover:bg-white/10 text-xs font-semibold transition-colors"
+            >
+              {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Share2 className="w-3.5 h-3.5" />}
+              <span>{copied ? 'Copied' : 'Share'}</span>
+            </button>
+
+            <Link
+              to={`/movie/${movie.slug || movie.id}`}
+              className="inline-flex items-center gap-1 px-4 py-2.5 rounded-xl text-gray-400 hover:text-white text-xs font-semibold transition-colors"
+            >
+              <span>Full Details &rarr;</span>
+            </Link>
+          </div>
+
+          <div className="flex items-center justify-center gap-1.5 text-[11px] text-gray-400 pt-2">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
             <span>Opens official verified streaming provider. 100% Legal.</span>
           </div>
