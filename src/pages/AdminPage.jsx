@@ -111,6 +111,7 @@ export default function AdminPage() {
     director: 'Director Name',
     platform: 'Netflix',
     watchUrl: 'https://www.netflix.com',
+    trailerUrl: '',
     trending: false,
   };
   const [formData, setFormData] = useState(initialForm);
@@ -311,6 +312,7 @@ export default function AdminPage() {
       director: movie.director || '',
       platform: movie.platform || 'Netflix',
       watchUrl: movie.watchUrl || '',
+      trailerUrl: movie.trailerUrl || movie.trailer || '',
       trending: Boolean(movie.trending),
     });
     setIsModalOpen(true);
@@ -338,6 +340,7 @@ export default function AdminPage() {
       director: formData.director.trim() || 'CinemaWala Director',
       platform: formData.platform.trim() || 'Official Platform',
       watchUrl: formData.watchUrl.trim() || 'https://www.netflix.com',
+      trailerUrl: (formData.trailerUrl || '').trim(),
       trending: formData.trending,
     };
 
@@ -890,6 +893,23 @@ export default function AdminPage() {
                     placeholder="https://www.primevideo.com/..."
                     className="w-full px-3.5 py-2 rounded-xl bg-cw-surface text-white border border-white/10 focus:border-cw-red focus:outline-none"
                   />
+                </div>
+
+                {/* Official YouTube Trailer URL */}
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-semibold text-gray-300 mb-1">
+                    Official YouTube Trailer URL (Optional)
+                  </label>
+                  <input
+                    type="url"
+                    value={formData.trailerUrl}
+                    onChange={(e) => setFormData({ ...formData, trailerUrl: e.target.value })}
+                    placeholder="https://www.youtube.com/watch?v=... or YouTube video ID"
+                    className="w-full px-3.5 py-2 rounded-xl bg-cw-surface text-white border border-white/10 focus:border-cw-red focus:outline-none text-xs"
+                  />
+                  <p className="text-[11px] text-gray-500 mt-1">
+                    Leave blank to automatically embed YouTube trailer search.
+                  </p>
                 </div>
 
                 {/* Poster Section (URL or Custom Phone/PC Photo) */}
