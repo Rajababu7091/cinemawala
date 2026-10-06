@@ -112,6 +112,10 @@ export default function AdminPage() {
     platform: 'Netflix',
     watchUrl: 'https://www.netflix.com',
     downloadUrl: '',
+    downloadUrl720p: '',
+    downloadUrl1080p: '',
+    downloadUrl4k: '',
+    cdn2Url: '',
     trailerUrl: '',
     trending: false,
   };
@@ -314,6 +318,10 @@ export default function AdminPage() {
       platform: movie.platform || 'Netflix',
       watchUrl: movie.watchUrl || '',
       downloadUrl: movie.downloadUrl || '',
+      downloadUrl720p: movie.downloadUrl720p || '',
+      downloadUrl1080p: movie.downloadUrl1080p || '',
+      downloadUrl4k: movie.downloadUrl4k || '',
+      cdn2Url: movie.cdn2Url || '',
       trailerUrl: movie.trailerUrl || movie.trailer || '',
       trending: Boolean(movie.trending),
     });
@@ -343,6 +351,10 @@ export default function AdminPage() {
       platform: formData.platform.trim() || 'Official Platform',
       watchUrl: formData.watchUrl.trim() || 'https://www.netflix.com',
       downloadUrl: (formData.downloadUrl || '').trim(),
+      downloadUrl720p: (formData.downloadUrl720p || '').trim(),
+      downloadUrl1080p: (formData.downloadUrl1080p || '').trim(),
+      downloadUrl4k: (formData.downloadUrl4k || '').trim(),
+      cdn2Url: (formData.cdn2Url || '').trim(),
       trailerUrl: (formData.trailerUrl || '').trim(),
       trending: formData.trending,
     };
@@ -898,21 +910,84 @@ export default function AdminPage() {
                   />
                 </div>
 
-                {/* Direct Download URL (HD) */}
-                <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-gray-300 mb-1 flex items-center justify-between">
-                    <span className="flex items-center gap-1.5">
-                      <span className="text-cw-red font-bold">⚡</span> Direct Download URL (HD Direct Link)
-                    </span>
-                    <span className="text-[11px] text-gray-400 font-normal">Optional (default uses Watch URL)</span>
-                  </label>
-                  <input
-                    type="url"
-                    value={formData.downloadUrl || ''}
-                    onChange={(e) => setFormData({ ...formData, downloadUrl: e.target.value })}
-                    placeholder="https://direct-download-cdn.com/... or Google Drive / Telegram direct link"
-                    className="w-full px-3.5 py-2 rounded-xl bg-cw-surface text-white border border-white/10 focus:border-cw-red focus:outline-none"
-                  />
+                {/* Direct Download URLs (HD & CDN 2) */}
+                <div className="sm:col-span-2 p-3.5 rounded-xl bg-black/40 border border-cw-red/30 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-white flex items-center gap-1.5">
+                      <span className="text-cw-red font-black">⚡</span> Direct Download Links (Full HD & Servers)
+                    </label>
+                    <span className="text-[11px] text-gray-400">Optional (default uses Watch URL)</span>
+                  </div>
+
+                  {/* Main / Full HD Link */}
+                  <div>
+                    <label className="block text-[11px] font-semibold text-gray-300 mb-1">
+                      Main Full HD Download URL (Default & 1-Click Link)
+                    </label>
+                    <input
+                      type="url"
+                      value={formData.downloadUrl || ''}
+                      onChange={(e) => setFormData({ ...formData, downloadUrl: e.target.value })}
+                      placeholder="https://gplinks.co/... or direct Google Drive / TeraBox link"
+                      className="w-full px-3.5 py-2 rounded-xl bg-cw-surface text-white border border-white/10 focus:border-cw-red focus:outline-none text-xs"
+                    />
+                  </div>
+
+                  {/* Direct CDN 2 Single Link */}
+                  <div>
+                    <label className="block text-[11px] font-semibold text-cw-gold mb-1">
+                      Direct CDN 2 Link (Single 1-Click Full HD Link at bottom)
+                    </label>
+                    <input
+                      type="url"
+                      value={formData.cdn2Url || ''}
+                      onChange={(e) => setFormData({ ...formData, cdn2Url: e.target.value })}
+                      placeholder="Leave blank to use Main Download URL automatically"
+                      className="w-full px-3.5 py-2 rounded-xl bg-cw-surface text-white border border-white/10 focus:border-cw-gold focus:outline-none text-xs"
+                    />
+                  </div>
+
+                  {/* Separate Quality Links Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+                    <div>
+                      <label className="block text-[10px] font-semibold text-gray-400 mb-1">
+                        720p HD Link (Optional)
+                      </label>
+                      <input
+                        type="url"
+                        value={formData.downloadUrl720p || ''}
+                        onChange={(e) => setFormData({ ...formData, downloadUrl720p: e.target.value })}
+                        placeholder="720p direct link"
+                        className="w-full px-2.5 py-1.5 rounded-lg bg-cw-surface text-white border border-white/10 focus:border-cw-red focus:outline-none text-xs"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-semibold text-gray-400 mb-1">
+                        1080p FHD Link (Optional)
+                      </label>
+                      <input
+                        type="url"
+                        value={formData.downloadUrl1080p || ''}
+                        onChange={(e) => setFormData({ ...formData, downloadUrl1080p: e.target.value })}
+                        placeholder="1080p direct link"
+                        className="w-full px-2.5 py-1.5 rounded-lg bg-cw-surface text-white border border-white/10 focus:border-cw-red focus:outline-none text-xs"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-semibold text-gray-400 mb-1">
+                        4K / 2160p Link (Optional)
+                      </label>
+                      <input
+                        type="url"
+                        value={formData.downloadUrl4k || ''}
+                        onChange={(e) => setFormData({ ...formData, downloadUrl4k: e.target.value })}
+                        placeholder="2160p 4K link"
+                        className="w-full px-2.5 py-1.5 rounded-lg bg-cw-surface text-white border border-white/10 focus:border-cw-red focus:outline-none text-xs"
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 {/* Official YouTube Trailer URL */}
