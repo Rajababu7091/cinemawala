@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Film, Play, ExternalLink, ShieldCheck, ArrowLeft, Star, Download, Heart, MessageCircle, Share2, Check } from 'lucide-react';
+import { Film, Play, ExternalLink, ShieldCheck, ArrowLeft, Star, Download, Heart, MessageCircle, Share2, Check, Zap, ArrowDownCircle } from 'lucide-react';
 import { InstagramIcon } from '../components/SocialIcons';
 import { useMovies } from '../context/MovieContext';
 import MovieCard from '../components/MovieCard';
 import SEO from '../components/SEO';
-import HdDownloadBox from '../components/HdDownloadBox';
+import HdDownloadBox, { getDownloadLink } from '../components/HdDownloadBox';
 
 export default function InstagramReelPage() {
   const { movieSlug } = useParams();
   const { getMovieBySlug, movies, isInWatchlist, toggleWatchlist, openTrailer } = useMovies();
   const [copied, setCopied] = useState(false);
+  const [selectedQuality, setSelectedQuality] = useState('1080p');
+  const [isDirectDownloading, setIsDirectDownloading] = useState(false);
 
   const movie = getMovieBySlug(movieSlug);
 
@@ -176,18 +178,59 @@ export default function InstagramReelPage() {
               </button>
             </div>
 
-            {/* Direct Download with Quality Tags on Top */}
+            {/* Direct Download with Interactive Quality Picker */}
             <div className="flex flex-col items-center gap-1.5 pt-1 w-full max-w-md">
-              <div className="flex items-center flex-wrap justify-center gap-1 px-2.5 py-1 rounded-lg bg-black/60 border border-white/10 shadow-inner">
+              <div className="flex items-center flex-wrap justify-center gap-1 px-2.5 py-1 rounded-lg bg-black/70 border border-white/10 shadow-inner">
                 <span className="text-[10px] font-black uppercase tracking-wider text-cw-red mr-0.5">Quality:</span>
-                <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-white/5 text-gray-400 border border-white/5">144p</span>
-                <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-white/5 text-gray-400 border border-white/5">480p</span>
-                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-cw-red/15 text-cw-red border border-cw-red/30">720p</span>
-                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-cw-red/15 text-cw-red border border-cw-red/30">1080p</span>
-                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-cw-red/15 text-cw-red border border-cw-red/30">1440p</span>
-                <span className="px-1.5 py-0.5 rounded text-[10px] font-black bg-cw-gold/15 text-cw-gold border border-cw-gold/40">2160p 4K</span>
+                {['144p', '480p', '720p', '1080p', '1440p', '2160p'].map((q) => {
+                  const isSelected = selectedQuality === q;
+                  return (
+                    <button
+                      key={q}
+                      type="button"
+                      onClick={() => setSelectedQuality(q)}
+                      className={`px-2 py-0.5 rounded text-[11px] font-bold transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-cw-red text-white shadow-glow-sm ring-1 ring-white/60 scale-105'
+                          : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 border border-white/5'
+                      }`}
+                      title={`Select ${q} to direct download`}
+                    >
+                      {q}
+                    </button>
+                  );
+                })}
               </div>
 
+              <button
+                type="button"
+                onClick={() => {
+                  setIsDirectDownloading(true);
+                  const link = getDownloadLink(movie, selectedQuality, 'cdn1');
+                  setTimeout(() => {
+                    setIsDirectDownloading(false);
+                    window.open(link, '_blank', 'noopener,noreferrer');
+                  }, 400);
+                }}
+                disabled={isDirectDownloading}
+                className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-cw-surface hover:bg-cw-red hover:text-white text-white font-bold text-sm border border-white/15 hover:border-cw-red shadow-md hover:scale-102 active:scale-95 transition-all group cursor-pointer"
+                title={`Click to direct download in ${selectedQuality}`}
+              >
+                {isDirectDownloading ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Connecting Direct Link...</span>
+                  </>
+                ) : (
+                  <>
+                    <Zap className="w-4 h-4 fill-cw-gold text-cw-gold" />
+                    <span>Direct Download ({selectedQuality})</span>
+                    <Download className="w-4 h-4 ml-0.5 opacity-90 group-hover:translate-y-0.5 transition-transform" />
+                  </>
+                )}
+              </button>
+
+              {/* Quick Link to Direct CDN 2 Box Below */}
               <button
                 type="button"
                 onClick={() => {
@@ -195,18 +238,13 @@ export default function InstagramReelPage() {
                   if (el) {
                     el.scrollIntoView({ behavior: 'smooth' });
                     el.classList.add('ring-4', 'ring-cw-red/70', 'shadow-[0_0_35px_rgba(229,9,20,0.4)]');
-                    setTimeout(() => {
-                      el.classList.remove('ring-4', 'ring-cw-red/70', 'shadow-[0_0_35px_rgba(229,9,20,0.4)]');
-                    }, 2200);
+                    setTimeout(() => el.classList.remove('ring-4', 'ring-cw-red/70', 'shadow-[0_0_35px_rgba(229,9,20,0.4)]'), 2200);
                   }
                 }}
-                className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-cw-surface hover:bg-white/10 text-white font-bold text-sm border border-white/15 hover:border-cw-red/50 shadow-md hover:scale-102 active:scale-95 transition-all group cursor-pointer"
+                className="text-[11px] text-gray-400 hover:text-cw-red transition-colors flex items-center gap-1 cursor-pointer mt-0.5"
               >
-                <Download className="w-4 h-4 text-cw-red group-hover:translate-y-0.5 transition-transform" />
-                <span>Direct Download</span>
-                <span className="px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wider rounded bg-cw-red/25 text-cw-red border border-cw-red/40 ml-0.5">
-                  HD
-                </span>
+                <span>Or view Direct CDN 2 & Full HD Server</span>
+                <ArrowDownCircle className="w-3.5 h-3.5 text-cw-red" />
               </button>
             </div>
           </div>
