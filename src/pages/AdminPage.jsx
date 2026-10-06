@@ -4,7 +4,7 @@ import {
   Plus, Edit2, Trash2, ExternalLink, RefreshCw, Check,
   AlertTriangle, Shield, Search, Film, X, Save, Eye,
   Lock, Unlock, Key, LogOut, EyeOff, ShieldCheck, ArrowRight, ArrowLeft,
-  Upload, Palette, Image as ImageIcon
+  Upload, Palette, Image as ImageIcon, Layers, Tv, Sparkles, Download
 } from 'lucide-react';
 import { useMovies } from '../context/MovieContext';
 import { compressImageFile, fetchAdminPasscodeFromCloud, syncAdminPasscodeToCloud } from '../services/cloudStorage';
@@ -94,6 +94,22 @@ export default function AdminPage() {
   const [editingMovie, setEditingMovie] = useState(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const [feedbackMsg, setFeedbackMsg] = useState('');
+
+  // Quick Add Season Modal State
+  const [isSeasonModalOpen, setIsSeasonModalOpen] = useState(false);
+  const [seasonTargetMovie, setSeasonTargetMovie] = useState(null);
+  const [isUploadingSeasonPoster, setIsUploadingSeasonPoster] = useState(false);
+  const [seasonEpisodeMode, setSeasonEpisodeMode] = useState('list'); // 'list' or 'bulk'
+  const [seasonForm, setSeasonForm] = useState({
+    seasonNumber: 2,
+    title: '',
+    year: 2026,
+    poster: '',
+    downloadUrl: '',
+    downloadUrl1080p: '',
+    episodesText: '',
+    episodes: [],
+  });
 
   // Form State
   const initialForm = {
@@ -292,6 +308,143 @@ export default function AdminPage() {
     updateSiteSettings(settingsForm);
     setIsSiteSettingsModalOpen(false);
     showNotification('Homepage text & wallpaper updated & synced to Cloud!');
+  };
+
+  const handleOpenAddSeason = (movie) => {
+    setSeasonTargetMovie(movie);
+    const existingSeasons = Array.isArray(movie.seasons) ? movie.seasons : [];
+    const nextSeasonNum = existingSeasons.length > 0 
+      ? Math.max(...existingSeasons.map(s => Number(s.seasonNumber) || 0)) + 1 
+      : (movie.type === 'series' || String(movie.duration || '').toLowerCase().includes('season') ? 2 : 2);
+
+    setSeasonForm({
+      seasonNumber: nextSeasonNum,
+      title: `Season ${nextSeasonNum}`,
+      year: new Date().getFullYear(),
+      poster: movie.poster || '',
+      downloadUrl: movie.downloadUrl || '',
+      downloadUrl1080p: movie.downloadUrl1080p || movie.downloadUrl || '',
+      episodesText: '',
+      episodes: [
+        { episodeNumber: 1, title: 'Episode 1', duration: '45m', downloadUrl: '' },
+        { episodeNumber: 2, title: 'Episode 2', duration: '45m', downloadUrl: '' },
+      ],
+    });
+    setSeasonEpisodeMode('list');
+    setIsSeasonModalOpen(true);
+  };
+
+  const handleSeasonPosterUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setIsUploadingSeasonPoster(true);
+      const dataUrl = await compressImageFile(file, 800, 0.85);
+      setSeasonForm(prev => ({ ...prev, poster: dataUrl }));
+      showNotification('Season poster photo attached!');
+    } catch (err) {
+      alert('Could not process photo: ' + err.message);
+    } finally {
+      setIsUploadingSeasonPoster(false);
+    }
+  };
+
+  const handleAddSeasonEpisode = () => {
+    setSeasonForm(prev => {
+      const nextNum = (prev.episodes?.length || 0) + 1;
+      return {
+        ...prev,
+        episodes: [
+          ...(prev.episodes || []),
+          { episodeNumber: nextNum, title: `Episode ${nextNum}`, duration: '45m', downloadUrl: '' }
+        ]
+      };
+    });
+  };
+
+  const handleRemoveSeasonEpisode = (idx) => {
+    setSeasonForm(prev => ({
+      ...prev,
+      episodes: prev.episodes.filter((_, i) => i !== idx)
+    }));
+  };
+
+  const handleEpisodeChange = (idx, field, value) => {
+    setSeasonForm(prev => {
+      const updated = [...prev.episodes];
+      updated[idx] = { ...updated[idx], [field]: value };
+      return { ...prev, episodes: updated };
+    });
+  };
+
+  const handleSaveSeason = (e) => {
+    e.preventDefault();
+    if (!seasonTargetMovie) return;
+
+    const seasonNum = Number(seasonForm.seasonNumber) || 1;
+    let existingSeasons = Array.isArray(seasonTargetMovie.seasons) ? [...seasonTargetMovie.seasons] : [];
+
+    // If series had no seasons array yet and we are adding Season 2, auto-generate Season 1 from current movie data
+    if (existingSeasons.length === 0 && seasonNum > 1) {
+      existingSeasons.push({
+        seasonNumber: 1,
+        title: 'Season 1',
+        year: seasonTargetMovie.year || 2025,
+        poster: seasonTargetMovie.poster,
+        backdrop: seasonTargetMovie.backdrop || seasonTargetMovie.poster,
+        downloadUrl: seasonTargetMovie.downloadUrl || '',
+        downloadUrl1080p: seasonTargetMovie.downloadUrl1080p || seasonTargetMovie.downloadUrl || '',
+        episodes: [
+          { episodeNumber: 1, title: 'Episode 1', duration: '45m', downloadUrl: seasonTargetMovie.downloadUrl || '' }
+        ],
+      });
+    }
+
+    // Determine episodes list (either from interactive list or bulk text lines)
+    let episodesList = [];
+    if (seasonEpisodeMode === 'bulk' && seasonForm.episodesText.trim()) {
+      const lines = seasonForm.episodesText.split('\n').map(l => l.trim()).filter(Boolean);
+      episodesList = lines.map((link, idx) => ({
+        episodeNumber: idx + 1,
+        title: `Episode ${idx + 1}`,
+        duration: '45m',
+        downloadUrl: link,
+      }));
+    } else {
+      episodesList = (seasonForm.episodes || []).filter(ep => ep.downloadUrl?.trim() || ep.title?.trim());
+    }
+
+    const newSeasonObj = {
+      seasonNumber: seasonNum,
+      title: seasonForm.title.trim() || `Season ${seasonNum}`,
+      year: Number(seasonForm.year) || 2026,
+      poster: seasonForm.poster.trim() || seasonTargetMovie.poster,
+      backdrop: seasonForm.poster.trim() || seasonTargetMovie.backdrop || seasonTargetMovie.poster,
+      downloadUrl: seasonForm.downloadUrl.trim() || seasonTargetMovie.downloadUrl || '',
+      downloadUrl1080p: (seasonForm.downloadUrl1080p || seasonForm.downloadUrl || '').trim(),
+      episodes: episodesList,
+    };
+
+    const existingIdx = existingSeasons.findIndex(s => s.seasonNumber === seasonNum);
+    if (existingIdx >= 0) {
+      existingSeasons[existingIdx] = newSeasonObj;
+    } else {
+      existingSeasons.push(newSeasonObj);
+    }
+    existingSeasons.sort((a, b) => (a.seasonNumber || 0) - (b.seasonNumber || 0));
+
+    const totalEps = existingSeasons.reduce((acc, s) => acc + (s.episodes?.length || 0), 0);
+
+    const updatedSeries = {
+      ...seasonTargetMovie,
+      type: 'series',
+      seasons: existingSeasons,
+      duration: `${existingSeasons.length} Seasons • ${totalEps > 0 ? `${totalEps} Episodes` : 'All Episodes'}`,
+    };
+
+    updateMovie(seasonTargetMovie.id, updatedSeries);
+    setIsSeasonModalOpen(false);
+    showNotification(`Season ${seasonNum} added to "${seasonTargetMovie.title}" successfully!`);
   };
 
   const handleOpenAdd = () => {
@@ -719,6 +872,16 @@ export default function AdminPage() {
                   {/* Actions */}
                   <td className="py-3 px-4 text-right">
                     <div className="inline-flex items-center gap-1.5">
+                      {/* Quick Add Season button */}
+                      <button
+                        onClick={() => handleOpenAddSeason(movie)}
+                        className="px-2 py-1 rounded-lg bg-purple-600/20 hover:bg-purple-600 text-purple-300 hover:text-white border border-purple-500/40 text-xs font-bold transition-all flex items-center gap-1 shadow-sm"
+                        title="Quick Add Season 2 or Season 3 to this title"
+                      >
+                        <Layers className="w-3.5 h-3.5 text-purple-400" />
+                        <span>+ Season</span>
+                      </button>
+
                       <Link
                         to={`/movie/${movie.slug || movie.id}`}
                         target="_blank"
@@ -1170,6 +1333,274 @@ export default function AdminPage() {
                   <span>{editingMovie ? 'Save Changes' : 'Create Movie'}</span>
                 </button>
               </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ================= QUICK ADD / EDIT SEASON MODAL ================= */}
+      {isSeasonModalOpen && seasonTargetMovie && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm overflow-y-auto animate-fadeIn">
+          <div className="relative w-full max-w-2xl bg-[#11131b] border-2 border-purple-500/40 rounded-3xl shadow-2xl p-6 sm:p-7 my-8 max-h-[92vh] overflow-y-auto">
+            
+            {/* Modal Ambient Glow */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-purple-600/10 rounded-full blur-3xl pointer-events-none" />
+
+            {/* Modal Header */}
+            <div className="flex items-start justify-between pb-4 border-b border-white/10 relative z-10">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-2xl bg-purple-600/20 border border-purple-500/40 flex items-center justify-center text-purple-300 flex-shrink-0 shadow-glow-sm">
+                  <Layers className="w-6 h-6 text-purple-400" />
+                </div>
+                <div>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-purple-600/30 text-purple-300 border border-purple-500/30">
+                    Web Series Season Manager
+                  </span>
+                  <h3 className="text-xl font-display font-black text-white mt-1">
+                    Add Season to "{seasonTargetMovie.title}"
+                  </h3>
+                  <p className="text-xs text-gray-400">
+                    Bas Photo aur Download Link de kar Season 2 ya 3 turant attach karein.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsSeasonModalOpen(false)}
+                className="p-1.5 rounded-xl text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Form */}
+            <form onSubmit={handleSaveSeason} className="mt-5 space-y-5 text-sm relative z-10">
+              
+              {/* Row 1: Season Number, Title, Year */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-gray-300 mb-1">
+                    Season Number *
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="50"
+                    required
+                    value={seasonForm.seasonNumber}
+                    onChange={(e) => setSeasonForm({ ...seasonForm, seasonNumber: e.target.value, title: `Season ${e.target.value}` })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-cw-surface text-white font-bold border border-white/10 focus:border-purple-500 focus:outline-none text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-300 mb-1">
+                    Season Title
+                  </label>
+                  <input
+                    type="text"
+                    value={seasonForm.title}
+                    onChange={(e) => setSeasonForm({ ...seasonForm, title: e.target.value })}
+                    placeholder="e.g. Season 2 or Season 2: Retribution"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-cw-surface text-white border border-white/10 focus:border-purple-500 focus:outline-none text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-300 mb-1">
+                    Release Year
+                  </label>
+                  <input
+                    type="number"
+                    value={seasonForm.year}
+                    onChange={(e) => setSeasonForm({ ...seasonForm, year: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-cw-surface text-white border border-white/10 focus:border-purple-500 focus:outline-none text-xs"
+                  />
+                </div>
+              </div>
+
+              {/* Row 2: Season Poster Photo (URL or File Upload) */}
+              <div className="p-4 rounded-2xl bg-cw-card border border-white/10 space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5">
+                    <ImageIcon className="w-4 h-4 text-purple-400" />
+                    <label className="text-xs font-bold text-white">
+                      Season Poster Photo (Image) *
+                    </label>
+                  </div>
+
+                  <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 text-xs font-semibold cursor-pointer border border-purple-500/40 transition-colors">
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>{isUploadingSeasonPoster ? 'Compressing...' : '📁 Upload Photo from Device'}</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleSeasonPosterUpload}
+                    />
+                  </label>
+                </div>
+
+                <div className="flex gap-3 items-center">
+                  <input
+                    type="text"
+                    value={seasonForm.poster}
+                    onChange={(e) => setSeasonForm({ ...seasonForm, poster: e.target.value })}
+                    placeholder="Paste image URL (https://...) ya device se photo upload karein..."
+                    className="flex-1 px-3.5 py-2.5 rounded-xl bg-cw-surface text-white border border-white/10 focus:border-purple-500 focus:outline-none text-xs font-mono"
+                  />
+                  {seasonForm.poster && (
+                    <div className="w-12 h-16 rounded-lg overflow-hidden border border-purple-500/50 flex-shrink-0 bg-black shadow-md">
+                      <img
+                        src={seasonForm.poster}
+                        alt="Season poster preview"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=200&auto=format&fit=crop';
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Row 3: Complete Season HD Direct Download Link */}
+              <div className="p-4 rounded-2xl bg-cw-card border border-white/10 space-y-2">
+                <div className="flex items-center gap-1.5">
+                  <Download className="w-4 h-4 text-cw-gold" />
+                  <label className="text-xs font-bold text-white">
+                    Full Season HD Pack Direct Download Link (Complete Zip / 1080p) *
+                  </label>
+                </div>
+                <input
+                  type="url"
+                  required
+                  value={seasonForm.downloadUrl}
+                  onChange={(e) => setSeasonForm({ ...seasonForm, downloadUrl: e.target.value })}
+                  placeholder="https://drive.google.com/... ya direct full season zip/pack link"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-cw-surface text-white border border-white/10 focus:border-purple-500 focus:outline-none text-xs font-mono"
+                />
+                <p className="text-[11px] text-gray-400">
+                  Yeh link "Complete Season Pack Direct Download" button aur CDN Direct server par chalega.
+                </p>
+              </div>
+
+              {/* Row 4: Episode-wise Download Links (HMM DONO KAR DEN A) */}
+              <div className="p-4 rounded-2xl bg-cw-card border border-white/10 space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-white/5">
+                  <div>
+                    <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
+                      <Tv className="w-4 h-4 text-cw-red" />
+                      <span>Episode-wise Download Links (Dono options ke liye)</span>
+                    </h4>
+                    <p className="text-[11px] text-gray-400">
+                      Har episode ka alag download link add karein:
+                    </p>
+                  </div>
+
+                  {/* Mode switcher: List vs Bulk */}
+                  <div className="flex items-center gap-1 bg-cw-surface p-1 rounded-lg border border-white/10 text-[11px]">
+                    <button
+                      type="button"
+                      onClick={() => setSeasonEpisodeMode('list')}
+                      className={`px-2 py-0.5 rounded font-bold transition-all ${
+                        seasonEpisodeMode === 'list'
+                          ? 'bg-purple-600 text-white'
+                          : 'text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      Episodes List
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSeasonEpisodeMode('bulk')}
+                      className={`px-2 py-0.5 rounded font-bold transition-all ${
+                        seasonEpisodeMode === 'bulk'
+                          ? 'bg-purple-600 text-white'
+                          : 'text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      Bulk Paste Links
+                    </button>
+                  </div>
+                </div>
+
+                {seasonEpisodeMode === 'bulk' ? (
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] text-gray-300 block">
+                      Paste Episode links (Ek line me ek link — auto Episode 1, Episode 2 ban jayega):
+                    </label>
+                    <textarea
+                      rows={5}
+                      value={seasonForm.episodesText}
+                      onChange={(e) => setSeasonForm({ ...seasonForm, episodesText: e.target.value })}
+                      placeholder="https://server.com/download/ep1.mkv&#10;https://server.com/download/ep2.mkv&#10;https://server.com/download/ep3.mkv"
+                      className="w-full px-3 py-2 rounded-xl bg-cw-surface text-white border border-white/10 focus:border-purple-500 focus:outline-none text-xs font-mono"
+                    />
+                  </div>
+                ) : (
+                  <div className="space-y-2.5 max-h-56 overflow-y-auto pr-1">
+                    {seasonForm.episodes && seasonForm.episodes.map((ep, idx) => (
+                      <div key={idx} className="p-2.5 rounded-xl bg-cw-surface border border-white/5 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                        <span className="w-8 h-8 rounded-lg bg-black/60 border border-white/10 flex items-center justify-center font-mono font-bold text-xs text-cw-gold flex-shrink-0">
+                          E{idx + 1}
+                        </span>
+                        <input
+                          type="text"
+                          value={ep.title}
+                          onChange={(e) => handleEpisodeChange(idx, 'title', e.target.value)}
+                          placeholder={`Episode ${idx + 1}`}
+                          className="w-32 px-2.5 py-1.5 rounded-lg bg-black/40 text-white border border-white/10 text-xs"
+                        />
+                        <input
+                          type="url"
+                          value={ep.downloadUrl}
+                          onChange={(e) => handleEpisodeChange(idx, 'downloadUrl', e.target.value)}
+                          placeholder="Direct download link..."
+                          className="flex-1 px-2.5 py-1.5 rounded-lg bg-black/40 text-white border border-white/10 text-xs font-mono"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveSeasonEpisode(idx)}
+                          className="p-1.5 rounded-lg text-gray-400 hover:text-red-400 hover:bg-white/5 transition-colors self-end sm:self-auto"
+                          title="Remove episode"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+
+                    <button
+                      type="button"
+                      onClick={handleAddSeasonEpisode}
+                      className="w-full py-2 rounded-xl bg-purple-600/10 hover:bg-purple-600/20 text-purple-300 border border-dashed border-purple-500/40 text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>+ Add Another Episode Link</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Form Action Buttons */}
+              <div className="pt-4 border-t border-white/10 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsSeasonModalOpen(false)}
+                  className="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 text-xs font-medium transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-black shadow-glow-sm transition-all"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>Attach Season {seasonForm.seasonNumber} to Series</span>
+                </button>
+              </div>
+
             </form>
           </div>
         </div>
