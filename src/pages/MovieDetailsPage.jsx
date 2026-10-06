@@ -12,7 +12,7 @@ import HdDownloadBox, { getDownloadLink } from '../components/HdDownloadBox';
 
 export default function MovieDetailsPage() {
   const { movieSlug } = useParams();
-  const { getMovieBySlug, movies, isInWatchlist, toggleWatchlist, openTrailer } = useMovies();
+  const { getMovieBySlug, movies, isLoaded, isInWatchlist, toggleWatchlist, openTrailer } = useMovies();
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
   const [selectedQuality, setSelectedQuality] = useState('1080p');
@@ -20,20 +20,22 @@ export default function MovieDetailsPage() {
   const [topDownloadAlert, setTopDownloadAlert] = useState(null);
   const [copiedEpisodeNum, setCopiedEpisodeNum] = useState(null);
 
-  const movie = getMovieBySlug(movieSlug);
+  const cleanSlug = decodeURIComponent(movieSlug || '');
+  const movie = getMovieBySlug(cleanSlug) || getMovieBySlug(movieSlug);
 
   const hasSeasons = Boolean(movie && Array.isArray(movie.seasons) && movie.seasons.length > 0);
-  const latestSeasonNum = hasSeasons ? movie.seasons[movie.seasons.length - 1].seasonNumber : 1;
+  const latestSeasonNum = hasSeasons ? (Number(movie.seasons[movie.seasons.length - 1].seasonNumber) || 1) : 1;
   const [selectedSeasonNumber, setSelectedSeasonNumber] = useState(latestSeasonNum);
 
   useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     if (hasSeasons) {
-      setSelectedSeasonNumber(movie.seasons[movie.seasons.length - 1].seasonNumber);
+      setSelectedSeasonNumber(Number(movie.seasons[movie.seasons.length - 1].seasonNumber) || 1);
     }
   }, [movieSlug, hasSeasons]);
 
   const currentSeason = hasSeasons
-    ? (movie.seasons.find(s => s.seasonNumber === selectedSeasonNumber) || movie.seasons[0])
+    ? (movie.seasons.find(s => Number(s.seasonNumber) === Number(selectedSeasonNumber)) || movie.seasons[0])
     : null;
 
   const effectivePoster = currentSeason?.poster || movie?.poster;
@@ -49,6 +51,15 @@ export default function MovieDetailsPage() {
     downloadUrl4k: currentSeason?.downloadUrl4k || currentSeason?.downloadUrl || movie.downloadUrl4k,
     cdn2Url: currentSeason?.cdn2Url || currentSeason?.downloadUrl || movie.cdn2Url,
   } : null;
+
+  if (!movie && !isLoaded) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center p-8 space-y-4">
+        <div className="w-12 h-12 border-3 border-cw-red border-t-transparent rounded-full animate-spin" />
+        <p className="text-gray-400 text-sm font-semibold animate-pulse">Loading movie details...</p>
+      </div>
+    );
+  }
 
   if (!movie) {
     return (
