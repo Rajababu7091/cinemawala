@@ -1,16 +1,23 @@
 import React, { useState, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Star, Play, Calendar, Globe, Sparkles, Film, Heart } from 'lucide-react';
 import { useMovies } from '../context/MovieContext';
 
 export default function MovieCard({ movie, featured = false }) {
   if (!movie) return null;
 
+  const navigate = useNavigate();
   const cardRef = useRef(null);
   const [tilt, setTilt] = useState({ x: 0, y: 0, shineX: 50, shineY: 50 });
   const [isHovered, setIsHovered] = useState(false);
 
   const movieSlug = movie.slug || String(movie.id);
+
+  const handleCardClick = (e) => {
+    // If the click is inside a button (watchlist or trailer), let button handle it
+    if (e.target.closest('button')) return;
+    navigate(`/movie/${movieSlug}`);
+  };
 
   const handleMouseMove = (e) => {
     if (!cardRef.current) return;
@@ -81,7 +88,8 @@ export default function MovieCard({ movie, featured = false }) {
         transition: isHovered ? 'transform 0.1s ease-out' : 'transform 0.45s ease-out',
         transformStyle: 'preserve-3d',
       }}
-      className="group relative flex flex-col h-full rounded-2xl overflow-hidden bg-gradient-to-b from-[#13151D] via-[#101218] to-[#0D0E14] border border-white/10 hover:border-cw-red/60 shadow-xl hover:shadow-[0_20px_50px_-10px_rgba(229,9,20,0.35)] transition-all duration-300 will-change-transform"
+      onClick={handleCardClick}
+      className="group relative flex flex-col h-full rounded-2xl overflow-hidden bg-gradient-to-b from-[#13151D] via-[#101218] to-[#0D0E14] border border-white/10 hover:border-cw-red/60 shadow-xl hover:shadow-[0_20px_50px_-10px_rgba(229,9,20,0.35)] transition-all duration-300 will-change-transform cursor-pointer"
     >
       {/* 3D Dynamic Specular Holographic Glint */}
       {isHovered && (
@@ -157,12 +165,15 @@ export default function MovieCard({ movie, featured = false }) {
 
         {/* 3D Floating Hover Play Action Overlay */}
         <div className="absolute inset-0 bg-black/65 backdrop-blur-xs opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center p-4 text-center z-20 pointer-events-none">
-          <div 
-            className="w-13 h-13 rounded-full bg-gradient-to-tr from-cw-red via-rose-500 to-amber-500 text-white flex items-center justify-center shadow-[0_0_30px_rgba(229,9,20,0.6)] transform scale-75 group-hover:scale-100 transition-all duration-300 mb-2.5"
+          <Link 
+            to={`/movie/${movieSlug}`}
+            onClick={(e) => e.stopPropagation()}
+            aria-label={`Open details for ${movie.title}`}
+            className="w-13 h-13 rounded-full bg-gradient-to-tr from-cw-red via-rose-500 to-amber-500 text-white flex items-center justify-center shadow-[0_0_30px_rgba(229,9,20,0.6)] transform scale-75 group-hover:scale-100 transition-all duration-300 mb-2.5 pointer-events-auto hover:scale-110 active:scale-95"
             style={{ transform: isHovered ? 'translateZ(50px)' : 'translateZ(0px)' }}
           >
             <Play className="w-5 h-5 fill-white text-white translate-x-0.5" />
-          </div>
+          </Link>
 
           <div 
             className="flex items-center gap-2 pointer-events-auto"
@@ -174,11 +185,13 @@ export default function MovieCard({ movie, featured = false }) {
             >
               Trailer HD
             </button>
-            <span 
-              className="text-xs font-black text-white tracking-wide bg-cw-red/90 px-3.5 py-1.5 rounded-full border border-white/20 shadow-lg"
+            <Link 
+              to={`/movie/${movieSlug}`}
+              onClick={(e) => e.stopPropagation()}
+              className="text-xs font-black text-white tracking-wide bg-cw-red hover:bg-cw-red-dark px-3.5 py-1.5 rounded-full border border-white/20 shadow-lg transition-all"
             >
               Details &rarr;
-            </span>
+            </Link>
           </div>
 
           {movie.description && (
