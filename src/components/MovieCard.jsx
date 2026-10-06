@@ -111,10 +111,17 @@ export default function MovieCard({ movie, featured = false }) {
           className="absolute top-2.5 inset-x-2.5 flex items-center justify-between z-30 transition-transform duration-200 pointer-events-none"
           style={{ transform: isHovered ? 'translateZ(35px)' : 'translateZ(0px)' }}
         >
-          {/* Rating */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/85 backdrop-blur-md border border-cw-gold/30 text-cw-gold text-xs font-black shadow-lg">
-            <Star className="w-3.5 h-3.5 fill-cw-gold text-cw-gold" />
-            <span>{movie.rating ? Number(movie.rating).toFixed(1) : '8.0'}</span>
+          {/* Rating & Season Indicator */}
+          <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/85 backdrop-blur-md border border-cw-gold/30 text-cw-gold text-xs font-black shadow-lg">
+              <Star className="w-3.5 h-3.5 fill-cw-gold text-cw-gold" />
+              <span>{movie.rating ? Number(movie.rating).toFixed(1) : '8.0'}</span>
+            </div>
+            {movie.seasons && movie.seasons.length > 0 && (
+              <span className="px-2 py-0.5 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-[10px] font-black uppercase tracking-wider shadow-md border border-white/20">
+                {movie.seasons.length} Seasons
+              </span>
+            )}
           </div>
 
           {/* Right Group: Platform + Watchlist Button */}
