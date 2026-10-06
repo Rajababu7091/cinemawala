@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
   Star, Calendar, Globe, Clock, User, Film, ExternalLink, 
   Share2, ArrowLeft, Check, Sparkles, AlertCircle, ShieldCheck, Play, Download,
-  Heart, MessageCircle, Zap, ArrowDownCircle
+  Heart, MessageCircle, Zap, ArrowDownCircle, Layers, Tv, Copy, CheckCircle2
 } from 'lucide-react';
 import { useMovies } from '../context/MovieContext';
 import MovieCard from '../components/MovieCard';
@@ -18,8 +18,37 @@ export default function MovieDetailsPage() {
   const [selectedQuality, setSelectedQuality] = useState('1080p');
   const [isDirectDownloading, setIsDirectDownloading] = useState(false);
   const [topDownloadAlert, setTopDownloadAlert] = useState(null);
+  const [copiedEpisodeNum, setCopiedEpisodeNum] = useState(null);
 
   const movie = getMovieBySlug(movieSlug);
+
+  const hasSeasons = Boolean(movie && Array.isArray(movie.seasons) && movie.seasons.length > 0);
+  const latestSeasonNum = hasSeasons ? movie.seasons[movie.seasons.length - 1].seasonNumber : 1;
+  const [selectedSeasonNumber, setSelectedSeasonNumber] = useState(latestSeasonNum);
+
+  useEffect(() => {
+    if (hasSeasons) {
+      setSelectedSeasonNumber(movie.seasons[movie.seasons.length - 1].seasonNumber);
+    }
+  }, [movieSlug, hasSeasons]);
+
+  const currentSeason = hasSeasons
+    ? (movie.seasons.find(s => s.seasonNumber === selectedSeasonNumber) || movie.seasons[0])
+    : null;
+
+  const effectivePoster = currentSeason?.poster || movie?.poster;
+  const effectiveBackdrop = currentSeason?.backdrop || currentSeason?.poster || movie?.backdrop || movie?.poster;
+  const effectiveYear = currentSeason?.year || movie?.year;
+  const effectiveMovieForDownload = movie ? {
+    ...movie,
+    title: currentSeason ? `${movie.title} (Season ${currentSeason.seasonNumber})` : movie.title,
+    poster: effectivePoster,
+    downloadUrl: currentSeason?.downloadUrl || movie.downloadUrl,
+    downloadUrl720p: currentSeason?.downloadUrl720p || currentSeason?.downloadUrl || movie.downloadUrl720p,
+    downloadUrl1080p: currentSeason?.downloadUrl1080p || currentSeason?.downloadUrl || movie.downloadUrl1080p,
+    downloadUrl4k: currentSeason?.downloadUrl4k || currentSeason?.downloadUrl || movie.downloadUrl4k,
+    cdn2Url: currentSeason?.cdn2Url || currentSeason?.downloadUrl || movie.cdn2Url,
+  } : null;
 
   if (!movie) {
     return (
@@ -79,12 +108,12 @@ export default function MovieDetailsPage() {
       <div className="relative -mt-6 sm:-mt-8 min-h-[350px] sm:min-h-[460px] flex items-end overflow-hidden rounded-b-3xl border-b border-white/10">
         <div className="absolute inset-0">
           <img
-            src={movie.backdrop || movie.poster}
-            alt={movie.title}
-            className="w-full h-full object-cover object-center filter brightness-30 transform scale-105"
+            src={effectiveBackdrop}
+            alt={effectiveTitle}
+            className="w-full h-full object-cover object-center filter brightness-30 transform scale-105 transition-all duration-500"
             onError={(e) => {
               e.target.onerror = null;
-              e.target.src = movie.poster;
+              e.target.src = effectivePoster;
             }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#0A0B0E] via-[#0A0B0E]/80 to-transparent" />
@@ -109,8 +138,14 @@ export default function MovieDetailsPage() {
               {movie.language || 'Hindi'}
             </span>
             <span className="px-2.5 py-1 rounded-md bg-white/10 text-gray-300 font-medium text-xs border border-white/10">
-              {movie.year || '2026'}
+              {effectiveYear || '2026'}
             </span>
+            {hasSeasons && (
+              <span className="px-2.5 py-1 rounded-md bg-purple-600 text-white font-black text-xs shadow-glow-sm flex items-center gap-1">
+                <Layers className="w-3.5 h-3.5" />
+                <span>Season {currentSeason?.seasonNumber}</span>
+              </span>
+            )}
             {movie.duration && (
               <span className="px-2.5 py-1 rounded-md bg-white/10 text-gray-300 font-medium text-xs border border-white/10">
                 {movie.duration}
@@ -124,6 +159,11 @@ export default function MovieDetailsPage() {
 
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-display font-black text-white tracking-tight leading-tight">
             {movie.title}
+            {hasSeasons && (
+              <span className="block sm:inline sm:ml-3 text-2xl sm:text-4xl text-purple-400 font-bold">
+                (Season {currentSeason?.seasonNumber})
+              </span>
+            )}
           </h1>
         </div>
       </div>
@@ -136,8 +176,8 @@ export default function MovieDetailsPage() {
           <div className="lg:col-span-4 flex flex-col space-y-5">
             <div className="relative aspect-[2/3] w-full rounded-2xl overflow-hidden bg-cw-surface border border-white/10 shadow-2xl group">
               <img
-                src={movie.poster}
-                alt={`${movie.title} Official Poster`}
+                src={effectivePoster}
+                alt={`${effectiveTitle} Official Poster`}
                 className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500"
                 onError={(e) => {
                   e.target.onerror = null;
@@ -208,6 +248,72 @@ export default function MovieDetailsPage() {
           {/* Right Column: Metadata, Storyline & "Where to Watch" */}
           <div className="lg:col-span-8 space-y-8">
             
+            {/* ================= SEASON SELECTOR TABS (FOR WEB SERIES) ================= */}
+            {hasSeasons && (
+              <div className="rounded-2xl bg-gradient-to-r from-[#1E112A] via-[#161226] to-[#12162A] border-2 border-purple-500/50 p-5 sm:p-6 shadow-2xl relative overflow-hidden">
+                <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-white/10">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center text-purple-300">
+                      <Layers className="w-5 h-5 text-purple-400" />
+                    </div>
+                    <div>
+                      <span className="text-[11px] font-black uppercase tracking-wider text-purple-300 block">
+                        Multi-Season Web Series
+                      </span>
+                      <h3 className="text-base sm:text-lg font-display font-extrabold text-white">
+                        Choose Season to Watch & Download
+                      </h3>
+                    </div>
+                  </div>
+
+                  <span className="text-xs font-bold text-gray-300 bg-white/5 border border-white/10 px-3 py-1 rounded-full">
+                    {movie.seasons.length} {movie.seasons.length === 1 ? 'Season Available' : 'Seasons Available'}
+                  </span>
+                </div>
+
+                {/* Season Switcher Buttons */}
+                <div className="flex flex-wrap items-center gap-2.5 pt-4">
+                  {movie.seasons.map((s) => {
+                    const isSelected = selectedSeasonNumber === s.seasonNumber;
+                    return (
+                      <button
+                        key={s.seasonNumber}
+                        type="button"
+                        onClick={() => setSelectedSeasonNumber(s.seasonNumber)}
+                        className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center gap-2 cursor-pointer shadow-md ${
+                          isSelected
+                            ? 'bg-gradient-to-r from-cw-red via-rose-600 to-cw-red-dark text-white ring-2 ring-white/60 shadow-glow-red scale-103'
+                            : 'bg-cw-surface/90 hover:bg-white/10 text-gray-300 hover:text-white border border-white/10'
+                        }`}
+                      >
+                        <Tv className="w-4 h-4" />
+                        <span>Season {s.seasonNumber}</span>
+                        {s.episodes && (
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-bold ${
+                            isSelected ? 'bg-black/40 text-cw-gold' : 'bg-white/10 text-gray-400'
+                          }`}>
+                            {s.episodes.length} Eps
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Info about selected season */}
+                {currentSeason && (
+                  <div className="mt-4 p-3 rounded-xl bg-black/40 border border-white/5 text-xs text-gray-300 flex items-center justify-between">
+                    <span className="text-white font-medium">
+                      Active: <strong className="text-cw-gold">{currentSeason.title || `Season ${currentSeason.seasonNumber}`}</strong> ({currentSeason.year || movie.year})
+                    </span>
+                    <span className="text-purple-300 font-semibold text-[11px]">
+                      Poster & Download Links synced
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* ================= WHERE TO WATCH (PRIMARY OFFICIAL CTA) ================= */}
             <div className="rounded-2xl bg-gradient-to-br from-[#1A1D27] to-[#12141C] border-2 border-cw-red/40 p-6 sm:p-8 shadow-2xl relative overflow-hidden">
               <div className="absolute top-0 right-0 w-48 h-48 bg-cw-red/10 rounded-full blur-3xl pointer-events-none" />
@@ -303,10 +409,10 @@ export default function MovieDetailsPage() {
                       type="button"
                       onClick={() => {
                         setIsDirectDownloading(true);
-                        const link = getDownloadLink(movie, selectedQuality, 'cdn1');
+                        const link = getDownloadLink(effectiveMovieForDownload || movie, selectedQuality, 'cdn1');
                         setTimeout(() => {
                           setIsDirectDownloading(false);
-                          setTopDownloadAlert(`⚡ Starting direct download for "${movie.title}" in ${selectedQuality}...`);
+                          setTopDownloadAlert(`⚡ Starting direct download for "${effectiveMovieForDownload?.title || movie.title}" in ${selectedQuality}...`);
                           setTimeout(() => setTopDownloadAlert(null), 4000);
                           window.open(link, '_blank', 'noopener,noreferrer');
                         }, 400);
@@ -360,7 +466,117 @@ export default function MovieDetailsPage() {
             </div>
 
             {/* ================= DEDICATED HD DIRECT DOWNLOAD BOX ================= */}
-            <HdDownloadBox movie={movie} />
+            <HdDownloadBox movie={effectiveMovieForDownload || movie} />
+
+            {/* ================= EPISODES DIRECT DOWNLOAD CENTER (HMM DONO KAR DEN A) ================= */}
+            {currentSeason?.episodes && currentSeason.episodes.length > 0 && (
+              <div className="rounded-2xl bg-gradient-to-b from-cw-card via-[#13151f] to-cw-card border-2 border-purple-500/30 p-5 sm:p-7 shadow-2xl space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/10">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="px-2.5 py-0.5 rounded-full bg-purple-600/30 text-purple-300 border border-purple-500/40 text-[10px] font-black uppercase tracking-wider">
+                        Season {currentSeason.seasonNumber} Episodes
+                      </span>
+                      <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        1080p HD Direct
+                      </span>
+                    </div>
+                    <h3 className="text-lg sm:text-2xl font-display font-black text-white">
+                      Episode-wise Direct Downloads 🎬
+                    </h3>
+                  </div>
+
+                  {/* Complete Season HD Pack Direct Download */}
+                  <a
+                    href={currentSeason.downloadUrl || movie.downloadUrl || 'https://www.netflix.com'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 hover:brightness-110 text-white font-bold text-xs shadow-md transition-all self-start sm:self-auto"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Download Full Season {currentSeason.seasonNumber} Pack (Zip)</span>
+                  </a>
+                </div>
+
+                <p className="text-xs sm:text-sm text-gray-300">
+                  Poora Season pack upar se ya har ek Episode alag-alag 1-click me direct download karein:
+                </p>
+
+                {/* List of episodes */}
+                <div className="space-y-2.5 pt-1">
+                  {currentSeason.episodes.map((ep, idx) => {
+                    const epNum = ep.episodeNumber || idx + 1;
+                    const epUrl = ep.downloadUrl || currentSeason.downloadUrl || movie.downloadUrl || 'https://www.netflix.com';
+                    const isCopied = copiedEpisodeNum === epNum;
+
+                    return (
+                      <div
+                        key={epNum}
+                        className="p-3.5 sm:p-4 rounded-xl bg-cw-surface/90 hover:bg-cw-surface border border-white/10 hover:border-cw-red/50 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-black/60 border border-white/10 group-hover:border-purple-400/50 flex items-center justify-center font-mono font-black text-sm text-cw-gold shadow-inner flex-shrink-0">
+                            E{epNum < 10 ? `0${epNum}` : epNum}
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-bold text-white group-hover:text-cw-red transition-colors flex items-center gap-2">
+                              <span>{ep.title || `Episode ${epNum}`}</span>
+                            </h4>
+                            <div className="flex items-center gap-2 text-xs text-gray-400 mt-0.5">
+                              <span>{ep.duration || '45m'}</span>
+                              <span>•</span>
+                              <span className="text-emerald-400 font-medium">1080p FHD Direct</span>
+                              <span>•</span>
+                              <span className="text-gray-500 font-mono">MKV</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Episode Action Buttons */}
+                        <div className="flex items-center gap-2 self-end sm:self-auto flex-shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (navigator.clipboard) {
+                                navigator.clipboard.writeText(epUrl);
+                                setCopiedEpisodeNum(epNum);
+                                setTimeout(() => setCopiedEpisodeNum(null), 2000);
+                              }
+                            }}
+                            className="p-2 sm:px-3 sm:py-2 rounded-xl bg-black/50 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-all"
+                            title="Copy Episode Direct Link"
+                          >
+                            {isCopied ? (
+                              <>
+                                <Check className="w-3.5 h-3.5 text-emerald-400" />
+                                <span className="text-emerald-400 text-xs font-bold">Copied</span>
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="w-3.5 h-3.5" />
+                                <span className="hidden sm:inline">Copy Link</span>
+                              </>
+                            )}
+                          </button>
+
+                          <a
+                            href={epUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-cw-red to-cw-red-dark text-white font-bold text-xs shadow-glow-sm hover:brightness-110 active:scale-95 transition-all"
+                          >
+                            <Zap className="w-3.5 h-3.5 fill-cw-gold text-cw-gold" />
+                            <span>Direct Download Episode {epNum}</span>
+                            <Download className="w-3.5 h-3.5 ml-0.5" />
+                          </a>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Synopsis / Description */}
             <div className="p-6 rounded-2xl bg-cw-card border border-white/5 space-y-3">
