@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { getStoredMovies, saveMovies, resetMoviesToDefault, DEFAULT_MOVIES } from '../data/movies';
+import { getStoredMovies, saveMovies, resetMoviesToDefault, DEFAULT_MOVIES, createSlug } from '../data/movies';
 import { 
   fetchMoviesFromCloud, 
   syncMoviesToCloud, 
@@ -10,8 +10,24 @@ import {
 
 const MovieContext = createContext();
 
+export const normalizeMovies = (list) => {
+  if (!Array.isArray(list)) return DEFAULT_MOVIES;
+  return list.map((m, idx) => ({
+    ...m,
+    id: m.id || idx + 1,
+    title: m.title || 'Untitled Movie',
+    slug: m.slug || createSlug(m.title || `movie-${m.id || idx + 1}`),
+    genre: Array.isArray(m.genre) ? m.genre : (m.genre ? String(m.genre).split(',').map(s => s.trim()).filter(Boolean) : ['Drama']),
+    language: m.language || 'Hindi',
+    rating: parseFloat(m.rating) || 8.0,
+    poster: m.poster || 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=600&auto=format&fit=crop',
+    backdrop: m.backdrop || m.poster,
+    category: Array.isArray(m.category) ? m.category : (m.category ? [m.category] : []),
+  }));
+};
+
 export function MovieProvider({ children }) {
-  const [movies, setMovies] = useState(DEFAULT_MOVIES);
+  const [movies, setMovies] = useState(() => normalizeMovies(getStoredMovies()));
   const [isLoaded, setIsLoaded] = useState(false);
   const [isCloudSynced, setIsCloudSynced] = useState(false);
 
@@ -27,18 +43,18 @@ export function MovieProvider({ children }) {
 
   // Initialize from storage and sync with Firebase Cloud Database
   useEffect(() => {
-    const local = getStoredMovies();
+    const local = normalizeMovies(getStoredMovies());
     setMovies(local);
     setIsLoaded(true);
 
     // Fetch live movies from Firebase Realtime Database
     fetchMoviesFromCloud().then((cloudMovies) => {
       if (cloudMovies && cloudMovies.length > 0) {
-        setMovies(cloudMovies);
-        saveMovies(cloudMovies);
+        const normalized = normalizeMovies(cloudMovies);
+        setMovies(normalized);
+        saveMovies(normalized);
         setIsCloudSynced(true);
       } else {
-        // If cloud database is empty, seed it with current movies (including Saiyaara)
         syncMoviesToCloud(local).then((ok) => {
           if (ok) setIsCloudSynced(true);
         });
@@ -104,11 +120,13 @@ export function MovieProvider({ children }) {
     syncMoviesToCloud(reset); // Sync to Firebase Cloud
   };
 
-  // Find movie by slug or id
+  // Find movie by slug or id safely
   const getMovieBySlug = (slug) => {
     if (!slug) return null;
-    return movies.find(m => m.slug.toLowerCase() === slug.toLowerCase()) || 
-           movies.find(m => String(m.id) === String(slug));
+    const target = String(slug).trim().toLowerCase();
+    return movies.find(m => String(m.slug || '').trim().toLowerCase() === target) || 
+           movies.find(m => String(m.id || '').trim() === target) ||
+           movies.find(m => createSlug(m.title || '') === target);
   };
 
   // Watchlist State (persisted in localStorage)
