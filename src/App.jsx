@@ -23,6 +23,8 @@ import PrivacyPage from './pages/PrivacyPage';
 import TermsPage from './pages/TermsPage';
 import NotFoundPage from './pages/NotFoundPage';
 
+import ScrollToTop from './components/ScrollToTop';
+
 export default function App() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
@@ -30,6 +32,7 @@ export default function App() {
     <AuthProvider>
       <MovieProvider>
         <Router>
+        <ScrollToTop />
         <div className="min-h-screen flex flex-col bg-[#0A0B0E] text-cw-light font-sans selection:bg-cw-red selection:text-white">
           
           {/* Top Sticky Navbar */}
