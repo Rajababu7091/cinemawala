@@ -8,6 +8,7 @@ import {
 import { useMovies } from '../context/MovieContext';
 import MovieCard from '../components/MovieCard';
 import SEO from '../components/SEO';
+import HdDownloadBox from '../components/HdDownloadBox';
 
 export default function MovieDetailsPage() {
   const { movieSlug } = useParams();
@@ -236,13 +237,13 @@ export default function MovieDetailsPage() {
                 </div>
 
                 {/* The "Watch Now", "Trailer", and "Download" Buttons */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 flex-shrink-0">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-2.5 flex-shrink-0">
                   <a
                     href={movie.watchUrl || 'https://www.netflix.com'}
                     target="_blank"
                     rel="noopener noreferrer"
                     id="official-watch-btn"
-                    className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-cw-red to-cw-red-dark text-white font-bold text-sm sm:text-base shadow-glow-red hover:brightness-110 active:scale-95 transition-all text-center"
+                    className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-cw-red to-cw-red-dark text-white font-bold text-sm sm:text-base shadow-glow-red hover:brightness-110 active:scale-95 transition-all text-center h-[48px]"
                   >
                     <Play className="w-5 h-5 fill-white text-white" />
                     <span>Watch Now</span>
@@ -252,25 +253,49 @@ export default function MovieDetailsPage() {
                   <button
                     onClick={() => openTrailer(movie)}
                     id="official-trailer-btn"
-                    className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-cw-surface hover:bg-white/10 text-white font-bold text-sm sm:text-base border border-white/15 hover:border-cw-red/50 shadow-md hover:scale-102 active:scale-95 transition-all text-center"
+                    className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-cw-surface hover:bg-white/10 text-white font-bold text-sm sm:text-base border border-white/15 hover:border-cw-red/50 shadow-md hover:scale-102 active:scale-95 transition-all text-center h-[48px]"
                     title="Watch Official Trailer HD"
                   >
                     <Play className="w-4 h-4 fill-cw-red text-cw-red" />
                     <span>Trailer</span>
                   </button>
 
-                  <a
-                    href={movie.watchUrl || 'https://www.netflix.com'}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    id="official-download-btn"
-                    className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-cw-surface hover:bg-white/10 text-white font-bold text-sm sm:text-base border border-white/15 hover:border-cw-red/50 shadow-md hover:scale-102 active:scale-95 transition-all text-center"
-                    title="Download on official platform"
-                  >
-                    <Download className="w-5 h-5 text-cw-red" />
-                    <span>Download</span>
-                    <ExternalLink className="w-4 h-4 ml-1 opacity-70 text-gray-400" />
-                  </a>
+                  {/* Direct Download Column with Quality Badges on top */}
+                  <div className="flex flex-col items-center sm:items-end gap-1.5 flex-shrink-0">
+                    {/* Quality mention above Download: 144p 480p 720p 1080p 1440p 2160p */}
+                    <div className="flex items-center flex-wrap justify-center sm:justify-end gap-1 px-2.5 py-1 rounded-lg bg-black/60 border border-white/10 shadow-inner">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-cw-red mr-0.5">Quality:</span>
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-white/5 text-gray-400 border border-white/5">144p</span>
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-white/5 text-gray-400 border border-white/5">480p</span>
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-cw-red/15 text-cw-red border border-cw-red/30">720p</span>
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-cw-red/15 text-cw-red border border-cw-red/30">1080p</span>
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-cw-red/15 text-cw-red border border-cw-red/30">1440p</span>
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-black bg-cw-gold/15 text-cw-gold border border-cw-gold/40">2160p 4K</span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const el = document.getElementById('hd-direct-download-box');
+                        if (el) {
+                          el.scrollIntoView({ behavior: 'smooth' });
+                          el.classList.add('ring-4', 'ring-cw-red/70', 'shadow-[0_0_35px_rgba(229,9,20,0.4)]');
+                          setTimeout(() => {
+                            el.classList.remove('ring-4', 'ring-cw-red/70', 'shadow-[0_0_35px_rgba(229,9,20,0.4)]');
+                          }, 2200);
+                        }
+                      }}
+                      id="official-download-btn"
+                      className="w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-cw-surface hover:bg-white/10 text-white font-bold text-sm sm:text-base border border-white/15 hover:border-cw-red/50 shadow-md hover:scale-102 active:scale-95 transition-all text-center group cursor-pointer h-[48px]"
+                      title="Direct Download HD (720p, 1080p, 1440p, 2160p)"
+                    >
+                      <Download className="w-5 h-5 text-cw-red group-hover:translate-y-0.5 transition-transform" />
+                      <span>Direct Download</span>
+                      <span className="px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wider rounded bg-cw-red/25 text-cw-red border border-cw-red/40 ml-0.5">
+                        HD
+                      </span>
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -280,6 +305,9 @@ export default function MovieDetailsPage() {
                 <span>Redirects exclusively to legitimate streaming, rental, or official distributor page. No piracy.</span>
               </div>
             </div>
+
+            {/* ================= DEDICATED HD DIRECT DOWNLOAD BOX ================= */}
+            <HdDownloadBox movie={movie} />
 
             {/* Synopsis / Description */}
             <div className="p-6 rounded-2xl bg-cw-card border border-white/5 space-y-3">
