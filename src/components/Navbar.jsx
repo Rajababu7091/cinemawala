@@ -51,6 +51,7 @@ export default function Navbar({ onOpenSearch }) {
   const navLinks = [
     { label: 'Home', path: '/' },
     { label: 'Movies', path: '/movies' },
+    { label: 'Web Series', path: '/series' },
     { label: 'Trending', path: '/#trending' },
     { label: 'Categories', path: '/#categories' },
     { label: 'About', path: '/about' },
