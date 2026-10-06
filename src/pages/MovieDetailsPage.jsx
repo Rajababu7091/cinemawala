@@ -41,6 +41,9 @@ export default function MovieDetailsPage() {
   const effectivePoster = currentSeason?.poster || movie?.poster;
   const effectiveBackdrop = currentSeason?.backdrop || currentSeason?.poster || movie?.backdrop || movie?.poster;
   const effectiveYear = currentSeason?.year || movie?.year;
+  const effectiveTitle = currentSeason 
+    ? `${movie?.title || ''} (${currentSeason.title || `Season ${currentSeason.seasonNumber}`})` 
+    : (movie?.title || 'Movie');
   const effectiveMovieForDownload = movie ? {
     ...movie,
     title: currentSeason ? `${movie.title} (Season ${currentSeason.seasonNumber})` : movie.title,

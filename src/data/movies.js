@@ -82,7 +82,7 @@ export const DEFAULT_MOVIES = [
     category: ["Bollywood", "Action", "Sci-Fi"]
   },
   {
-    id: 2,
+    id: 13,
     title: "Dhoop Chhaon",
     slug: "dhoop-chhaon",
     year: 2025,
