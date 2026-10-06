@@ -14,6 +14,7 @@ import SurpriseMeModal from './components/SurpriseMeModal';
 // Pages
 import HomePage from './pages/HomePage';
 import MoviesPage from './pages/MoviesPage';
+import WebSeriesPage from './pages/WebSeriesPage';
 import MovieDetailsPage from './pages/MovieDetailsPage';
 import InstagramReelPage from './pages/InstagramReelPage';
 import AdminPage from './pages/AdminPage';
@@ -54,6 +55,8 @@ export default function App() {
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/movies" element={<MoviesPage />} />
+              <Route path="/series" element={<WebSeriesPage />} />
+              <Route path="/series/:movieSlug" element={<MovieDetailsPage />} />
               <Route path="/movie/:movieSlug" element={<MovieDetailsPage />} />
               <Route path="/watch/:movieSlug" element={<InstagramReelPage />} />
               <Route path="/admin" element={<AdminPage />} />
