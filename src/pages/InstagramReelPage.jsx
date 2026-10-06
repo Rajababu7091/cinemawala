@@ -5,6 +5,7 @@ import { InstagramIcon } from '../components/SocialIcons';
 import { useMovies } from '../context/MovieContext';
 import MovieCard from '../components/MovieCard';
 import SEO from '../components/SEO';
+import HdDownloadBox from '../components/HdDownloadBox';
 
 export default function InstagramReelPage() {
   const { movieSlug } = useParams();
@@ -151,27 +152,63 @@ export default function InstagramReelPage() {
             </p>
           </div>
 
-          {/* Primary CTA Buttons: Watch Now, Trailer, Download */}
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <a
-              href={movie.watchUrl || 'https://www.netflix.com'}
-              target="_blank"
-              rel="noopener noreferrer"
-              id="reel-watch-now-btn"
-              className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-gradient-to-r from-cw-red to-cw-red-dark text-white font-extrabold text-sm sm:text-base shadow-glow-red hover:scale-105 active:scale-95 transition-all"
-            >
-              <Play className="w-4 h-4 fill-white text-white" />
-              <span>Watch on {movie.platform || 'Partner'}</span>
-              <ExternalLink className="w-3.5 h-3.5 opacity-80" />
-            </a>
+          {/* Primary CTA Buttons: Watch Now, Trailer, Direct Download */}
+          <div className="flex flex-col items-center gap-3 w-full">
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <a
+                href={movie.watchUrl || 'https://www.netflix.com'}
+                target="_blank"
+                rel="noopener noreferrer"
+                id="reel-watch-now-btn"
+                className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-gradient-to-r from-cw-red to-cw-red-dark text-white font-extrabold text-sm sm:text-base shadow-glow-red hover:scale-105 active:scale-95 transition-all"
+              >
+                <Play className="w-4 h-4 fill-white text-white" />
+                <span>Watch on {movie.platform || 'Partner'}</span>
+                <ExternalLink className="w-3.5 h-3.5 opacity-80" />
+              </a>
 
-            <button
-              onClick={() => openTrailer(movie)}
-              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm sm:text-base border border-white/20 hover:border-cw-red/50 shadow-md hover:scale-105 active:scale-95 transition-all"
-            >
-              <Play className="w-4 h-4 fill-cw-red text-cw-red" />
-              <span>Watch Trailer HD</span>
-            </button>
+              <button
+                onClick={() => openTrailer(movie)}
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm sm:text-base border border-white/20 hover:border-cw-red/50 shadow-md hover:scale-105 active:scale-95 transition-all"
+              >
+                <Play className="w-4 h-4 fill-cw-red text-cw-red" />
+                <span>Watch Trailer HD</span>
+              </button>
+            </div>
+
+            {/* Direct Download with Quality Tags on Top */}
+            <div className="flex flex-col items-center gap-1.5 pt-1 w-full max-w-md">
+              <div className="flex items-center flex-wrap justify-center gap-1 px-2.5 py-1 rounded-lg bg-black/60 border border-white/10 shadow-inner">
+                <span className="text-[10px] font-black uppercase tracking-wider text-cw-red mr-0.5">Quality:</span>
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-white/5 text-gray-400 border border-white/5">144p</span>
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-white/5 text-gray-400 border border-white/5">480p</span>
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-cw-red/15 text-cw-red border border-cw-red/30">720p</span>
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-cw-red/15 text-cw-red border border-cw-red/30">1080p</span>
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-cw-red/15 text-cw-red border border-cw-red/30">1440p</span>
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-black bg-cw-gold/15 text-cw-gold border border-cw-gold/40">2160p 4K</span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const el = document.getElementById('hd-direct-download-box');
+                  if (el) {
+                    el.scrollIntoView({ behavior: 'smooth' });
+                    el.classList.add('ring-4', 'ring-cw-red/70', 'shadow-[0_0_35px_rgba(229,9,20,0.4)]');
+                    setTimeout(() => {
+                      el.classList.remove('ring-4', 'ring-cw-red/70', 'shadow-[0_0_35px_rgba(229,9,20,0.4)]');
+                    }, 2200);
+                  }
+                }}
+                className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-cw-surface hover:bg-white/10 text-white font-bold text-sm border border-white/15 hover:border-cw-red/50 shadow-md hover:scale-102 active:scale-95 transition-all group cursor-pointer"
+              >
+                <Download className="w-4 h-4 text-cw-red group-hover:translate-y-0.5 transition-transform" />
+                <span>Direct Download</span>
+                <span className="px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wider rounded bg-cw-red/25 text-cw-red border border-cw-red/40 ml-0.5">
+                  HD
+                </span>
+              </button>
+            </div>
           </div>
 
           {/* Secondary Actions: Watchlist, Share WhatsApp, Copy, Full Details */}
@@ -217,6 +254,9 @@ export default function InstagramReelPage() {
           </div>
         </div>
       </div>
+
+      {/* Dedicated HD Only Direct Download Box */}
+      <HdDownloadBox movie={movie} />
 
       {/* "More Movies You May Like" with 4 related cards */}
       <div className="pt-6 space-y-4">
