@@ -226,37 +226,47 @@ export default function MovieDetailsPage() {
               </p>
 
               {/* Streaming Platform Box */}
-              <div className="mt-6 p-4 sm:p-5 rounded-xl bg-cw-card/90 border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-3.5">
-                  <div className="w-12 h-12 rounded-xl bg-cw-surface border border-white/10 flex items-center justify-center text-white font-bold text-lg shadow-inner">
-                    <Film className="w-6 h-6 text-cw-red" />
+              <div className="mt-6 p-4 sm:p-5 rounded-2xl bg-cw-card/90 border border-white/10 space-y-4 shadow-xl">
+                {/* Header row inside card: Platform Info + Status */}
+                <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-white/5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-xl bg-cw-surface border border-white/10 flex items-center justify-center text-white font-bold text-lg shadow-inner flex-shrink-0">
+                      <Film className="w-5 h-5 text-cw-red" />
+                    </div>
+                    <div>
+                      <span className="text-xs text-gray-400 block font-medium">Available on</span>
+                      <h4 className="text-base sm:text-lg font-bold text-white">
+                        {platform}
+                      </h4>
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-xs text-gray-400 block font-medium">Available on</span>
-                    <h4 className="text-lg font-bold text-white">
-                      {platform}
-                    </h4>
+
+                  <div className="text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <span>Official Stream & HD Direct Download</span>
                   </div>
                 </div>
 
-                {/* The "Watch Now", "Trailer", and "Download" Buttons */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-2.5 flex-shrink-0">
+                {/* The "Watch Now", "Trailer", and "Direct Download" Buttons */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-end">
+                  {/* Watch Now Button */}
                   <a
                     href={movie.watchUrl || 'https://www.netflix.com'}
                     target="_blank"
                     rel="noopener noreferrer"
                     id="official-watch-btn"
-                    className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-cw-red to-cw-red-dark text-white font-bold text-sm sm:text-base shadow-glow-red hover:brightness-110 active:scale-95 transition-all text-center h-[48px]"
+                    className="sm:col-span-1 lg:col-span-4 inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-gradient-to-r from-cw-red to-cw-red-dark text-white font-bold text-sm sm:text-base shadow-glow-red hover:brightness-110 active:scale-95 transition-all text-center h-[48px]"
                   >
                     <Play className="w-5 h-5 fill-white text-white" />
                     <span>Watch Now</span>
-                    <ExternalLink className="w-4 h-4 ml-1 opacity-80" />
+                    <ExternalLink className="w-3.5 h-3.5 opacity-80" />
                   </a>
 
+                  {/* Trailer Button */}
                   <button
                     onClick={() => openTrailer(movie)}
                     id="official-trailer-btn"
-                    className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-cw-surface hover:bg-white/10 text-white font-bold text-sm sm:text-base border border-white/15 hover:border-cw-red/50 shadow-md hover:scale-102 active:scale-95 transition-all text-center h-[48px]"
+                    className="sm:col-span-1 lg:col-span-3 inline-flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl bg-cw-surface hover:bg-white/10 text-white font-bold text-sm sm:text-base border border-white/15 hover:border-cw-red/50 shadow-md hover:scale-102 active:scale-95 transition-all text-center h-[48px]"
                     title="Watch Official Trailer HD"
                   >
                     <Play className="w-4 h-4 fill-cw-red text-cw-red" />
@@ -264,7 +274,7 @@ export default function MovieDetailsPage() {
                   </button>
 
                   {/* Direct Download Column with Interactive Quality Picker */}
-                  <div className="flex flex-col items-center sm:items-end gap-1.5 flex-shrink-0">
+                  <div className="sm:col-span-2 lg:col-span-5 flex flex-col items-stretch gap-1.5">
                     {/* User chooses which quality to download: 144p, 480p, 720p, 1080p, 1440p, 2160p */}
                     <div className="flex items-center flex-wrap justify-center sm:justify-end gap-1 px-2.5 py-1 rounded-lg bg-black/70 border border-white/10 shadow-inner">
                       <span className="text-[10px] font-black uppercase tracking-wider text-cw-red mr-0.5">Quality:</span>
@@ -275,7 +285,7 @@ export default function MovieDetailsPage() {
                             key={q}
                             type="button"
                             onClick={() => setSelectedQuality(q)}
-                            className={`px-2 py-0.5 rounded text-[11px] font-bold transition-all cursor-pointer ${
+                            className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer ${
                               isSelected
                                 ? 'bg-cw-red text-white shadow-glow-sm ring-1 ring-white/60 scale-105'
                                 : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 border border-white/5'
@@ -303,7 +313,7 @@ export default function MovieDetailsPage() {
                       }}
                       disabled={isDirectDownloading}
                       id="official-download-btn"
-                      className="w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-cw-surface hover:bg-cw-red hover:text-white text-white font-bold text-sm sm:text-base border border-white/15 hover:border-cw-red shadow-md hover:scale-102 active:scale-95 transition-all text-center group cursor-pointer h-[48px]"
+                      className="w-full inline-flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl bg-cw-surface hover:bg-cw-red hover:text-white text-white font-bold text-sm border border-white/15 hover:border-cw-red shadow-md hover:scale-102 active:scale-95 transition-all text-center group cursor-pointer h-[48px]"
                       title={`Click to direct download in ${selectedQuality}`}
                     >
                       {isDirectDownloading ? (
@@ -314,29 +324,31 @@ export default function MovieDetailsPage() {
                       ) : (
                         <>
                           <Zap className="w-4 h-4 fill-cw-gold text-cw-gold" />
-                          <span>Direct Download ({selectedQuality})</span>
+                          <span className="truncate">Direct Download ({selectedQuality})</span>
                           <Download className="w-4 h-4 ml-0.5 opacity-90 group-hover:translate-y-0.5 transition-transform" />
                         </>
                       )}
                     </button>
-
-                    {/* Quick Link to CDN 2 / Full HD Box Below */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const el = document.getElementById('hd-direct-download-box');
-                        if (el) {
-                          el.scrollIntoView({ behavior: 'smooth' });
-                          el.classList.add('ring-4', 'ring-cw-red/70', 'shadow-[0_0_35px_rgba(229,9,20,0.4)]');
-                          setTimeout(() => el.classList.remove('ring-4', 'ring-cw-red/70', 'shadow-[0_0_35px_rgba(229,9,20,0.4)]'), 2200);
-                        }
-                      }}
-                      className="text-[11px] text-gray-400 hover:text-cw-red transition-colors flex items-center gap-1 cursor-pointer"
-                    >
-                      <span>Or view Direct CDN 2 & Full HD Server</span>
-                      <ArrowDownCircle className="w-3.5 h-3.5 text-cw-red" />
-                    </button>
                   </div>
+                </div>
+
+                {/* Quick Link to CDN 2 / Full HD Box Below */}
+                <div className="flex justify-end pt-0.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const el = document.getElementById('hd-direct-download-box');
+                      if (el) {
+                        el.scrollIntoView({ behavior: 'smooth' });
+                        el.classList.add('ring-4', 'ring-cw-red/70', 'shadow-[0_0_35px_rgba(229,9,20,0.4)]');
+                        setTimeout(() => el.classList.remove('ring-4', 'ring-cw-red/70', 'shadow-[0_0_35px_rgba(229,9,20,0.4)]'), 2200);
+                      }
+                    }}
+                    className="text-[11px] text-gray-400 hover:text-cw-red transition-colors flex items-center gap-1 cursor-pointer"
+                  >
+                    <span>Or view Direct CDN 2 & Full HD Server</span>
+                    <ArrowDownCircle className="w-3.5 h-3.5 text-cw-red" />
+                  </button>
                 </div>
               </div>
 
