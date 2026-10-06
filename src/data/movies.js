@@ -21,6 +21,7 @@
  *   director: "Director Name",
  *   platform: "Netflix", // e.g., Netflix, Prime Video, Disney+ Hotstar, JioCinema, Apple TV
  *   watchUrl: "https://www.netflix.com/title/...", // Official legal streaming or rental link
+ *   downloadUrl: "https://...", // Optional direct HD download link (defaults to watchUrl)
  *   trending: true, // true to display in 🔥 Trending Now section
  *   category: ["Bollywood", "Action"] // optional additional tag groupings
  * }
