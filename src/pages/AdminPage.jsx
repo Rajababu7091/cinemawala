@@ -111,6 +111,7 @@ export default function AdminPage() {
     director: 'Director Name',
     platform: 'Netflix',
     watchUrl: 'https://www.netflix.com',
+    downloadUrl: '',
     trailerUrl: '',
     trending: false,
   };
@@ -312,6 +313,7 @@ export default function AdminPage() {
       director: movie.director || '',
       platform: movie.platform || 'Netflix',
       watchUrl: movie.watchUrl || '',
+      downloadUrl: movie.downloadUrl || '',
       trailerUrl: movie.trailerUrl || movie.trailer || '',
       trending: Boolean(movie.trending),
     });
@@ -340,6 +342,7 @@ export default function AdminPage() {
       director: formData.director.trim() || 'CinemaWala Director',
       platform: formData.platform.trim() || 'Official Platform',
       watchUrl: formData.watchUrl.trim() || 'https://www.netflix.com',
+      downloadUrl: (formData.downloadUrl || '').trim(),
       trailerUrl: (formData.trailerUrl || '').trim(),
       trending: formData.trending,
     };
@@ -891,6 +894,23 @@ export default function AdminPage() {
                     value={formData.watchUrl}
                     onChange={(e) => setFormData({ ...formData, watchUrl: e.target.value })}
                     placeholder="https://www.primevideo.com/..."
+                    className="w-full px-3.5 py-2 rounded-xl bg-cw-surface text-white border border-white/10 focus:border-cw-red focus:outline-none"
+                  />
+                </div>
+
+                {/* Direct Download URL (HD) */}
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-semibold text-gray-300 mb-1 flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">
+                      <span className="text-cw-red font-bold">⚡</span> Direct Download URL (HD Direct Link)
+                    </span>
+                    <span className="text-[11px] text-gray-400 font-normal">Optional (default uses Watch URL)</span>
+                  </label>
+                  <input
+                    type="url"
+                    value={formData.downloadUrl || ''}
+                    onChange={(e) => setFormData({ ...formData, downloadUrl: e.target.value })}
+                    placeholder="https://direct-download-cdn.com/... or Google Drive / Telegram direct link"
                     className="w-full px-3.5 py-2 rounded-xl bg-cw-surface text-white border border-white/10 focus:border-cw-red focus:outline-none"
                   />
                 </div>
