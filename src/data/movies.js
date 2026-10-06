@@ -218,10 +218,11 @@ export const DEFAULT_MOVIES = [
     id: 9,
     title: "Delhi Syndicate",
     slug: "delhi-syndicate",
+    type: "series",
     year: 2026,
     genre: ["Web Series", "Action", "Thriller"],
     language: "Hindi",
-    duration: "Season 1 • 8 Episodes",
+    duration: "2 Seasons • 16 Episodes",
     rating: 9.0,
     poster: "https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?q=80&w=900&auto=format&fit=crop",
     backdrop: "https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?q=80&w=1600&auto=format&fit=crop",
@@ -231,7 +232,37 @@ export const DEFAULT_MOVIES = [
     platform: "Netflix",
     watchUrl: "https://www.netflix.com",
     trending: true,
-    category: ["Web Series", "Bollywood", "Thriller"]
+    category: ["Web Series", "Bollywood", "Thriller"],
+    seasons: [
+      {
+        seasonNumber: 1,
+        title: "Season 1: Rise of the Syndicate",
+        year: 2025,
+        poster: "https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?q=80&w=900&auto=format&fit=crop",
+        downloadUrl: "https://www.netflix.com",
+        downloadUrl1080p: "https://www.netflix.com",
+        episodes: [
+          { episodeNumber: 1, title: "The Capital Nexus", duration: "48m", downloadUrl: "https://www.netflix.com" },
+          { episodeNumber: 2, title: "Shadow Deals", duration: "52m", downloadUrl: "https://www.netflix.com" },
+          { episodeNumber: 3, title: "Wiretap Protocol", duration: "45m", downloadUrl: "https://www.netflix.com" },
+          { episodeNumber: 4, title: "Checkmate at Midnight", duration: "56m", downloadUrl: "https://www.netflix.com" },
+        ]
+      },
+      {
+        seasonNumber: 2,
+        title: "Season 2: Empire in Ashes",
+        year: 2026,
+        poster: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=900&auto=format&fit=crop",
+        downloadUrl: "https://www.netflix.com",
+        downloadUrl1080p: "https://www.netflix.com",
+        episodes: [
+          { episodeNumber: 1, title: "New Alliances", duration: "50m", downloadUrl: "https://www.netflix.com" },
+          { episodeNumber: 2, title: "Underground Vault", duration: "49m", downloadUrl: "https://www.netflix.com" },
+          { episodeNumber: 3, title: "Betrayal in Lutyens", duration: "54m", downloadUrl: "https://www.netflix.com" },
+          { episodeNumber: 4, title: "The Final Reckoning", duration: "58m", downloadUrl: "https://www.netflix.com" },
+        ]
+      }
+    ]
   },
   {
     id: 10,
@@ -292,7 +323,7 @@ export const DEFAULT_MOVIES = [
   }
 ];
 
-const STORAGE_KEY = 'cinemawala_movies_v2';
+const STORAGE_KEY = 'cinemawala_movies_v3';
 
 /**
  * Get all movies from localStorage, falling back to DEFAULT_MOVIES
@@ -302,6 +333,19 @@ export function getStoredMovies() {
   try {
     const item = window.localStorage.getItem(STORAGE_KEY);
     if (!item) {
+      const v2Item = window.localStorage.getItem('cinemawala_movies_v2');
+      if (v2Item) {
+        try {
+          const parsedV2 = JSON.parse(v2Item);
+          if (Array.isArray(parsedV2) && parsedV2.length > 0) {
+            const defaultIds = new Set(DEFAULT_MOVIES.map(m => m.id));
+            const customMovies = parsedV2.filter(m => !defaultIds.has(m.id));
+            const merged = [...DEFAULT_MOVIES, ...customMovies];
+            window.localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+            return merged;
+          }
+        } catch {}
+      }
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_MOVIES));
       return DEFAULT_MOVIES;
     }
